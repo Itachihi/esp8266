@@ -22,8 +22,12 @@ GEN_IMAGES= eagle.app.v6.out
 GEN_BINS= eagle.app.v6.bin
 SPECIAL_MKTARGETS=$(APP_MKTARGETS)
 SUBDIRS=    \
-	user    \
-	driver
+	user	\
+	driver	\
+	lwip	\
+	json	\
+	ssl	\
+	upgrade
 
 endif # } PDIR
 
@@ -46,9 +50,23 @@ ifeq ($(FLAVOR),release)
     TARGET_LDFLAGS += -g -O0
 endif
 
+LD_FILE = $(LDDIR)/eagle.app.v6.ld
+
+ifeq ($(APP), 1)
+	LD_FILE = $(LDDIR)/eagle.app.v6.app1.ld
+endif
+
+ifeq ($(APP), 2)
+	LD_FILE = $(LDDIR)/eagle.app.v6.app2.ld
+endif
+
 COMPONENTS_eagle.app.v6 = \
-	user/libuser.a  \
-	driver/libdriver.a
+	user/libuser.a	\
+	driver/libdriver.a	\
+	lwip/liblwip.a	\
+	json/libjson.a	\
+	ssl/libssl.a	\
+	upgrade/libupgrade.a
 
 LINKFLAGS_eagle.app.v6 = \
 	-L../lib        \
@@ -64,12 +82,10 @@ LINKFLAGS_eagle.app.v6 = \
 	-lphy	\
 	-lpp	\
 	-lnet80211	\
-	-llwip	\
 	-lwpa	\
 	-lmain	\
 	-ljson	\
-	-lupgrade\
-	-lssl	\
+	-lsmartconfig \
 	$(DEP_LIBS_eagle.app.v6)					\
 	-Wl,--end-group
 
@@ -91,7 +107,11 @@ DEPENDS_eagle.app.v6 = \
 #	-DTXRX_TXBUF_DEBUG
 #	-DTXRX_RXBUF_DEBUG
 #	-DWLAN_CONFIG_CCX
-CONFIGURATION_DEFINES =	-DICACHE_FLASH
+CONFIGURATION_DEFINES =	-D__ets__ \
+			-DICACHE_FLASH	\
+			-DLWIP_OPEN_SRC	\
+			-DPBUF_RSV_FOR_WLAN	\
+			-DEBUF_LWIP
 
 DEFINES +=				\
 	$(UNIVERSAL_TARGET_DEFINES)	\
@@ -115,8 +135,18 @@ DDEFINES +=				\
 #
 
 INCLUDES := $(INCLUDES) -I $(PDIR)include
+INCLUDES += -I ./
 PDIR := ../$(PDIR)
 sinclude $(PDIR)Makefile
+
+#########################################################################
+#
+#  generate bin file
+#
+
+$(BINODIR)/%.bin: $(IMAGEODIR)/%.out
+	@mkdir -p $(BINODIR)
+	$(OBJCOPY) -O binary $< $@
 
 .PHONY: FORCE
 FORCE:
