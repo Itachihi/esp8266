@@ -4,23 +4,28 @@
 #define ESP_PLATFORM        1
 #define LEWEI_PLATFORM      0
 
-#define USE_OPTIMIZE_PRINTF
-
 #if ESP_PLATFORM
 #define PLUG_DEVICE             0
 #define LIGHT_DEVICE            0
 #define SENSOR_DEVICE			1
 
 #if SENSOR_DEVICE
-#define HUMITURE_SUB_DEVICE         1
+#define HX711_SUB_DEVICE         	1
+#define HUMITURE_SUB_DEVICE         0
 #define FLAMMABLE_GAS_SUB_DEVICE    0
+#endif
+
+#if HX711_SUB_DEVICE == 1
+	#define BLOCK_HX711(a...)	a
+#else
+	#define BLOCK_HX711(a...)
 #endif
 
 //#define SERVER_SSL_ENABLE
 //#define CLIENT_SSL_ENABLE
 //#define UPGRADE_SSL_ENABLE
 
-#define USE_DNS
+//#define USE_DNS
 
 #ifdef USE_DNS
 #define ESP_DOMAIN      "iot.espressif.cn"
@@ -29,7 +34,8 @@
 #define SOFTAP_ENCRYPT
 
 #ifdef SOFTAP_ENCRYPT
-#define PASSWORD	"v*%W>L<@i&Nxe!"
+#define AP_SSID		"ZKWIFI"
+#define PASSWORD	"12345678"
 #endif
 
 #if SENSOR_DEVICE
@@ -39,6 +45,8 @@
 #define SENSOR_DEEP_SLEEP_TIME    30000000
 #elif FLAMMABLE_GAS_SUB_DEVICE
 #define SENSOR_DEEP_SLEEP_TIME    60000000
+#elif HX711_SUB_DEVICE
+#define SENSOR_DEEP_SLEEP_TIME    30000000
 #endif
 #endif
 

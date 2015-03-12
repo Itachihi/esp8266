@@ -6,6 +6,7 @@
 #ifndef __SMARTCONFIG_H__
 #define __SMARTCONFIG_H__
 
+#include <stdbool.h>
 typedef void (*sc_callback_t)(void *data);
 
 typedef enum  {

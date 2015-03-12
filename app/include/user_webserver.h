@@ -25,7 +25,8 @@ typedef enum _ParmType {
     DEEP_SLEEP,
     LIGHT_STATUS,
     CONNECT_STATUS,
-    USER_BIN
+    USER_BIN,
+    WEIGHT_INFO
 } ParmType;
 
 typedef struct URL_Frame {

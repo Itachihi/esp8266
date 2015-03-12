@@ -102,7 +102,17 @@ uart1_write_char(char c)
         uart1_tx_one_char(c);
     }
 }
-
+LOCAL void ICACHE_FLASH_ATTR
+uart0_write_char(char c)
+{
+    if (c == '\n') {
+        uart_tx_one_char('\r');
+        uart_tx_one_char('\n');
+    } else if (c == '\r') {
+    } else {
+        uart_tx_one_char(c);
+    }
+}
 /******************************************************************************
  * FunctionName : uart0_rx_intr_handler
  * Description  : Internal used function
@@ -182,6 +192,6 @@ uart_init(UartBautRate uart0_br, UartBautRate uart1_br)
     ETS_UART_INTR_ENABLE();
 
     // install uart1 putc callback
-    os_install_putc1((void *)uart1_write_char);
+    os_install_putc1((void *)uart0_write_char);
 }
 

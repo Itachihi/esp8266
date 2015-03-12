@@ -18,18 +18,45 @@
 #include "user_json.h"
 #include "user_devicefind.h"
 
-const char *device_find_request = "Are You Espressif IOT Smart Device?";
-#if PLUG_DEVICE
-const char *device_find_response_ok = "I'm Plug.";
-#elif LIGHT_DEVICE
-const char *device_find_response_ok = "I'm Light.";
-#elif SENSOR_DEVICE
-#if HUMITURE_SUB_DEVICE
-const char *device_find_response_ok = "I'm Humiture.";
-#elif FLAMMABLE_GAS_SUB_DEVICE
-const char *device_find_response_ok = "I'm Flammable Gas.";
-#endif
-#endif
+static const char* const KEY_Action		= "action";
+static const char* const KEY_Type		= "type";
+static const char* const KEY_Ip			= "ip";
+static const char* const KEY_Mac		= "mac";
+
+static const char* const ACTION_Find	= "find";
+static const char* const TYPE_Weight	= "weight";
+
+LOCAL ICACHE_FLASH_ATTR
+int json_get_string(struct jsonparse_state *state, char* name, int size){
+	jsonparse_next(state);jsonparse_next(state);
+	return jsonparse_copy_value(state, name, size);
+}
+
+LOCAL ICACHE_FLASH_ATTR
+bool is_call_me(const char* dat, unsigned short len){
+	bool flag = false;
+	int type;
+	struct jsonparse_state state;
+	char *buf = (char *)os_malloc(len);
+	jsonparse_setup(&state, dat, len);
+	while((type = jsonparse_next(&state)) != 0){
+		if(type == JSON_TYPE_PAIR_NAME){
+			if(jsonparse_strcmp_value(&state, KEY_Action) == 0){
+				json_get_string(&state, buf, len);
+				if(os_strcmp(buf, ACTION_Find) == 0){
+					flag = true;
+				}
+			}else if(jsonparse_strcmp_value(&state, KEY_Type) == 0){
+				json_get_string(&state, buf, len);
+				if(os_strcmp(buf, TYPE_Weight) != 0){
+					flag = false;
+				}
+			}
+		}
+	}
+	os_free(buf);
+	return flag;
+}
 
 /*---------------------------------------------------------------------------*/
 LOCAL struct espconn ptrespconn;
@@ -45,53 +72,35 @@ LOCAL struct espconn ptrespconn;
 LOCAL void ICACHE_FLASH_ATTR
 user_devicefind_recv(void *arg, char *pusrdata, unsigned short length)
 {
-    char DeviceBuffer[40] = {0};
+    char DeviceBuffer[64] = {0};
     char Device_mac_buffer[60] = {0};
     char hwaddr[6];
+    struct espconn *pconn = arg;
 
     struct ip_info ipconfig;
-
-    if (wifi_get_opmode() != STATION_MODE) {
-        wifi_get_ip_info(SOFTAP_IF, &ipconfig);
-        wifi_get_macaddr(SOFTAP_IF, hwaddr);
-
-        if (!ip_addr_netcmp((struct ip_addr *)ptrespconn.proto.udp->remote_ip, &ipconfig.ip, &ipconfig.netmask)) {
-            wifi_get_ip_info(STATION_IF, &ipconfig);
-            wifi_get_macaddr(STATION_IF, hwaddr);
-        }
-    } else {
-        wifi_get_ip_info(STATION_IF, &ipconfig);
-        wifi_get_macaddr(STATION_IF, hwaddr);
-    }
-
     if (pusrdata == NULL) {
         return;
     }
+    do{
+    	if(wifi_get_opmode() != STATION_MODE){
+            wifi_get_ip_info(SOFTAP_IF, &ipconfig);
+            wifi_get_macaddr(SOFTAP_IF, hwaddr);
+            if(ip_addr_netcmp((struct ip_addr *)pconn->proto.udp->remote_ip, &ipconfig.ip, &ipconfig.netmask)){
+            	break;
+            }
+    	}
+        wifi_get_ip_info(STATION_IF, &ipconfig);
+        wifi_get_macaddr(STATION_IF, hwaddr);
+    }while(0);
 
-    if (length == os_strlen(device_find_request) &&
-            os_strncmp(pusrdata, device_find_request, os_strlen(device_find_request)) == 0) {
-        os_sprintf(DeviceBuffer, "%s" MACSTR " " IPSTR, device_find_response_ok,
-                   MAC2STR(hwaddr), IP2STR(&ipconfig.ip));
-
-        os_printf("%s\n", DeviceBuffer);
-        length = os_strlen(DeviceBuffer);
-        espconn_sent(&ptrespconn, DeviceBuffer, length);
-    } else if (length == (os_strlen(device_find_request) + 18)) {
-        os_sprintf(Device_mac_buffer, "%s " MACSTR , device_find_request, MAC2STR(hwaddr));
-        os_printf("%s", Device_mac_buffer);
-
-        if (os_strncmp(Device_mac_buffer, pusrdata, os_strlen(device_find_request) + 18) == 0) {
-            //os_printf("%s\n", Device_mac_buffer);
-            length = os_strlen(DeviceBuffer);
-            os_sprintf(DeviceBuffer, "%s" MACSTR " " IPSTR, device_find_response_ok,
-                       MAC2STR(hwaddr), IP2STR(&ipconfig.ip));
-
-            os_printf("%s\n", DeviceBuffer);
-            length = os_strlen(DeviceBuffer);
-            espconn_sent(&ptrespconn, DeviceBuffer, length);
-        } else {
-            return;
-        }
+    if(is_call_me(pusrdata, length)){
+    	char* buffer = (char *)os_malloc(jsonSize);
+    	int len = os_sprintf(buffer, "{\"%s\":\"%s\",\"%s\":\"" IPSTR "\",\"%s\":\"" MACSTR "\"}",
+    			KEY_Type,TYPE_Weight,
+    			KEY_Ip, IP2STR(&ipconfig.ip),
+    			KEY_Mac, MAC2STR(hwaddr));
+    	espconn_sent(pconn, buffer, len);
+    	os_free(buffer);
     }
 }
 

@@ -8,30 +8,45 @@
  * Modification history:
  *     2014/1/1, v1.0 create this file.
 *******************************************************************************/
-#include "ets_sys.h"
-#include "osapi.h"
-
 #include "user_interface.h"
+#include "driver/uart.h"
+#include "driver/key.h"
+#include "user.h"
 
-#include "user_devicefind.h"
-#include "user_webserver.h"
+#define KEY_NUM		1
+LOCAL struct keys_param keys;
+LOCAL struct single_key_param *single_key[KEY_NUM];
 
-#if ESP_PLATFORM
-#include "user_esp_platform.h"
-#endif
 
-#ifdef SERVER_SSL_ENABLE
-#include "ssl/cert.h"
-#include "ssl/private_key.h"
-#else
-#ifdef CLIENT_SSL_ENABLE
-unsigned char *default_certificate;
-unsigned int default_certificate_len = 0;
-unsigned char *default_private_key;
-unsigned int default_private_key_len = 0;
-#endif
-#endif
 
+LOCAL void ICACHE_FLASH_ATTR
+key_ok_short_press(void){
+	sc_enable();
+}
+LOCAL void ICACHE_FLASH_ATTR
+key_ok_long_press(void){
+	system_restore();
+	system_restart();
+}
+
+LOCAL void ICACHE_FLASH_ATTR
+user_key_init(void){
+	single_key[0] = key_init_single(KEY_ONEKEY_NUM, KEY_ONEKEY_MUX, KEY_ONEKEY_FUNC,
+			key_ok_long_press, key_ok_short_press);
+
+	keys.key_num = KEY_NUM;
+	keys.single_key = single_key;
+
+	key_init(&keys);
+}
+
+static
+void init_done_cb(void){
+    sc_init();
+    user_key_init();
+    webserver_init();
+    user_devicefind_init();
+}
 /******************************************************************************
  * FunctionName : user_init
  * Description  : entry of user application, init user function here
@@ -40,17 +55,11 @@ unsigned int default_private_key_len = 0;
 *******************************************************************************/
 void user_init(void)
 {
+	uart_init(BIT_RATE_115200,BIT_RATE_115200);
     os_printf("SDK version:%s\n", system_get_sdk_version());
 
-#if ESP_PLATFORM
-    user_esp_platform_init();
-#endif
-
-    user_devicefind_init();
-#ifdef SERVER_SSL_ENABLE
-    user_webserver_init(SERVER_SSL_PORT);
-#else
-    user_webserver_init(SERVER_PORT);
-#endif
+    wifi_set_opmode(STATION_MODE);
+    system_set_os_print(1);
+    system_init_done_cb(init_done_cb);
 }
 

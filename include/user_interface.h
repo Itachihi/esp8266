@@ -22,6 +22,11 @@
 #define MACSTR "%02x:%02x:%02x:%02x:%02x:%02x"
 #endif
 
+#ifndef MAC2STR3
+#define MAC2STR3(a)	(a)[3], (a)[4], (a)[5]
+#define MACSTR3	"%02X%02X%02X"
+#endif
+
 enum rst_reason {
 	DEFAULT_RST_FLAG	= 0,
 	WDT_RST_FLAG	= 1,
@@ -189,7 +194,7 @@ struct softap_config {
     AUTH_MODE authmode;	// Note: Don't support AUTH_WEP in softAP mode.
     uint8 ssid_hidden;	// Note: default 0
     uint8 max_connection;	// Note: default 4, max 4
-    uint8 beacon_interval;	// Note: support 100 ~ 60000 ms, default 100
+    uint16 beacon_interval;	// Note: support 100 ~ 60000 ms, default 100
 };
 
 bool wifi_softap_get_config(struct softap_config *config);
