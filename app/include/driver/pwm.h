@@ -1,7 +1,7 @@
 #ifndef __PWM_H__
 #define __PWM_H__
 
-#define PWM_CHANNEL 3
+#define PWM_CHANNEL 4
 
 struct pwm_single_param {
 	uint16 gpio_set;
@@ -30,6 +30,11 @@ struct pwm_param {
 #define PWM_2_OUT_IO_MUX PERIPHS_IO_MUX_MTCK_U
 #define PWM_2_OUT_IO_NUM 13
 #define PWM_2_OUT_IO_FUNC  FUNC_GPIO13
+
+#define PWM_3_OUT_IO_MUX PERIPHS_IO_MUX_MTMS_U
+#define PWM_3_OUT_IO_NUM 14
+#define PWM_3_OUT_IO_FUNC  FUNC_GPIO14
+
 
 void pwm_init(uint16 freq, uint8 *duty);
 void pwm_start(void);

@@ -20,8 +20,8 @@ xt-objcopy --only-section .rodata -O binary %image% %name%.rodata.bin
 xt-objcopy --only-section .irom0.text -O binary %image% %name%.irom0text.bin
 
 del /F eagle.app.flash.bin
-gen_appbin.py %image% 0 0 0 0
-::gen_flashbin.py eagle.app.flash.bin %name%.irom0text.bin
+python C:\usr\xtensa\esp_iot_sdk\tools\gen_appbin.py %image% 0 0 0 0
+::python C:\usr\xtensa\esp_iot_sdk\tools\gen_flashbin.py eagle.app.flash.bin %name%.irom0text.bin
 
 xcopy /y %name%.irom0text.bin %pdir%\bin\
 ::xcopy /y %name%.flash.bin %pdir%\bin\

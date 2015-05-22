@@ -20,7 +20,7 @@ LOCAL struct pwm_single_param *pwm_single;
 
 LOCAL struct pwm_param pwm;
 
-LOCAL uint8 pwm_out_io_num[PWM_CHANNEL] = {PWM_0_OUT_IO_NUM, PWM_1_OUT_IO_NUM, PWM_2_OUT_IO_NUM};
+LOCAL uint8 pwm_out_io_num[PWM_CHANNEL] = {PWM_0_OUT_IO_NUM, PWM_1_OUT_IO_NUM, PWM_2_OUT_IO_NUM,PWM_3_OUT_IO_NUM};
 
 LOCAL uint8 pwm_channel_toggle[2];
 LOCAL uint8 *pwm_channel;
@@ -306,6 +306,7 @@ pwm_init(uint16 freq, uint8 *duty)
     PIN_FUNC_SELECT(PWM_0_OUT_IO_MUX, PWM_0_OUT_IO_FUNC);
     PIN_FUNC_SELECT(PWM_1_OUT_IO_MUX, PWM_1_OUT_IO_FUNC);
     PIN_FUNC_SELECT(PWM_2_OUT_IO_MUX, PWM_2_OUT_IO_FUNC);
+	PIN_FUNC_SELECT(PWM_3_OUT_IO_MUX, PWM_3_OUT_IO_FUNC);
 
     for (i = 0; i < PWM_CHANNEL; i++) {
         pwm_gpio |= (1 << pwm_out_io_num[i]);

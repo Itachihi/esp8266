@@ -204,6 +204,22 @@ i2c_master_getAck(void)
 }
 
 /******************************************************************************
+* FunctionName : i2c_master_checkAck
+* Description  : get dev response
+* Parameters   : NONE
+* Returns      : true : get ack ; false : get nack
+*******************************************************************************/
+bool ICACHE_FLASH_ATTR
+i2c_master_checkAck(void)
+{
+    if(i2c_master_getAck()){
+        return FALSE;
+    }else{
+        return TRUE;
+    }
+}
+
+/******************************************************************************
  * FunctionName : i2c_master_readByte
  * Description  : read Byte from i2c bus
  * Parameters   : NONE

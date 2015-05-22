@@ -116,6 +116,6 @@ user_devicefind_init(void)
     ptrespconn.type = ESPCONN_UDP;
     ptrespconn.proto.udp = (esp_udp *)os_zalloc(sizeof(esp_udp));
     ptrespconn.proto.udp->local_port = 1025;
-    espconn_regist_recvcb(&ptrespconn, user_devicefind_recv);
+    espconn_regist_recvcb(&ptrespconn, user_devicefind_recv);//接收到数据时回调user_devicefind_recv函数
     espconn_create(&ptrespconn);
 }

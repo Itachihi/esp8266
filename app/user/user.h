@@ -11,6 +11,7 @@
 #include <stdbool.h>
 #include "driver/key.h"
 
+
 #define KEY_ONEKEY_MUX		PERIPHS_IO_MUX_GPIO2_U
 #define KEY_ONEKEY_NUM		2
 #define KEY_ONEKEY_FUNC		FUNC_GPIO2
@@ -19,6 +20,9 @@
 #define LED_ONEKEY_NUM		0
 #define LED_ONEKEY_FUNC		FUNC_GPIO0
 
+
+#define LED_ON              0
+#define LED_OFF             1
 
 void sc_init(void);
 void sc_enable(void);

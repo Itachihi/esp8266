@@ -13,8 +13,8 @@
 #include "osapi.h"
 #include "driver/uart.h"
 
-#define UART0   0
-#define UART1   1
+//#define UART0   0
+//#define UART1   1
 
 // UartDev is defined and initialized in rom code.
 extern UartDevice UartDev;
@@ -69,6 +69,7 @@ uart_config(uint8 uart_no)
  * Parameters   : uint8 TxChar - character to tx
  * Returns      : OK
 *******************************************************************************/
+
 LOCAL STATUS ICACHE_FLASH_ATTR
 uart1_tx_one_char(uint8 TxChar)
 {
@@ -83,6 +84,7 @@ uart1_tx_one_char(uint8 TxChar)
 	WRITE_PERI_REG(UART_FIFO(UART1) , TxChar);
 	return OK;
 }
+
 
 /******************************************************************************
  * FunctionName : uart1_write_char
@@ -102,6 +104,7 @@ uart1_write_char(char c)
         uart1_tx_one_char(c);
     }
 }
+
 LOCAL void ICACHE_FLASH_ATTR
 uart0_write_char(char c)
 {
@@ -112,6 +115,23 @@ uart0_write_char(char c)
     } else {
         uart_tx_one_char(c);
     }
+}
+
+/******************************************************************************
+ * FunctionName : uart0_sendStr
+ * Description  : use uart0 to transfer buffer
+ * Parameters   : uint8 *buf - point to send buffer
+ *                uint16 len - buffer len
+ * Returns      :
+*******************************************************************************/
+void ICACHE_FLASH_ATTR
+uart0_sendStr(const char *str)
+{
+	while(*str)
+	{
+	//	uart_tx_one_char(UART0, *str++);
+	    uart0_write_char(*str++);
+	}
 }
 /******************************************************************************
  * FunctionName : uart0_rx_intr_handler
@@ -170,7 +190,7 @@ uart0_tx_buffer(uint8 *buf, uint16 len)
     uint16 i;
 
     for (i = 0; i < len; i++) {
-        uart_tx_one_char(buf[i]);
+        uart_tx_one_char(UART0,buf[i]);
     }
 }
 

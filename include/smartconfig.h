@@ -26,4 +26,5 @@ const char *smartconfig_get_version(void);
 bool smartconfig_start(sc_type type, sc_callback_t cb);
 bool smartconfig_stop(void);
 
+
 #endif

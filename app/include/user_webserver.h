@@ -4,7 +4,7 @@
 #define SERVER_PORT 80
 #define SERVER_SSL_PORT 443
 
-#define URLSize 10
+#define URLSize 50
 
 typedef enum Result_Resp {
     RespFail = 0,

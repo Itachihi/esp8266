@@ -27,6 +27,7 @@ data_send(void *arg, bool responseOK, char *psend)
     char httphead[256];
     struct espconn *ptrespconn = arg;
     os_memset(httphead, 0, 256);
+	os_printf("data_send\n");
 
     if (responseOK) {
         os_sprintf(httphead,
@@ -63,11 +64,13 @@ Content-Length: 0\r\nServer: lwIP/1.4.0\r\n\n");
         espconn_sent(ptrespconn, httphead, length);
 #endif
     }
+	os_printf("%s\n",pbuf);
 
-    if (pbuf) {
+    if (pbuf) {		
         os_free(pbuf);
         pbuf = NULL;
     }
+
 }
 
 static
@@ -102,12 +105,14 @@ void jsontree_send(struct espconn* ctx,struct jsontree_value *tree, const char* 
 
 static
 void client_func_info(struct espconn* ctx, const char* const parm){
+	os_printf("client func info \n");
 	jsontree_send(ctx, getINFOTree(), "info");
+	
 }
 
 static
 void client_func_status(struct espconn* ctx, const char* const parm){
-	jsontree_send(ctx, getConStatusTree(), "status");
+	jsontree_send(ctx, getConStatusTree(), "status"); 
 }
 
 static
@@ -115,12 +120,88 @@ void client_func_scan(struct espconn* ctx, const char* const parm){
 
 }
 
+static 
+void setlight_func_on(struct espconn* ctx, const char* const parm){
+	os_printf("setlight fuc on \n");
+
+	jsontree_send(ctx,getSetLightOnTree(),"on");
+
+}
+
+static 
+void setlight_func_off(struct espconn* ctx, const char* const parm){
+	os_printf("setlight fuc off \n");
+
+	jsontree_send(ctx,getSetLightOffTree(),"off");
+
+}
+static 
+void controlcar_func_forward(struct espconn* ctx, const char* const parm){
+	os_printf("controlcar fuc forward \n");
+
+	jsontree_send(ctx,getControlCarForwardTree(),"forward");
+
+}
+static 
+void controlcar_func_left(struct espconn* ctx, const char* const parm){
+	os_printf("controlcar fuc left \n");
+
+	jsontree_send(ctx,getControlCarLeftTree(),"left");
+
+}
+static 
+void controlcar_func_right(struct espconn* ctx, const char* const parm){
+	os_printf("controlcar fuc right \n");
+
+	jsontree_send(ctx,getControlCarRightTree(),"right");
+
+}
+static 
+void controlcar_func_stop(struct espconn* ctx, const char* const parm){
+	os_printf("controlcar fuc stop \n");
+
+	jsontree_send(ctx,getControlCarStopTree(),"stop");
+
+}
+
+static 
+void controlcar_func_back(struct espconn* ctx, const char* const parm){
+	os_printf("controlcar fuc back \n");
+
+	jsontree_send(ctx,getControlCarBackTree(),"back");
+
+}
+static 
+void arm_func_1(struct espconn* ctx, const char* const parm){
+	os_printf("arm_func_1  \n");
+
+	jsontree_send(ctx,getArm1Tree(),"arm1");
+
+}
+static 
+void arm_func_2(struct espconn* ctx, const char* const parm){
+	os_printf("arm_func_2  \n");
+
+	jsontree_send(ctx,getArm2Tree(),"arm2");
+
+}
+static 
+void arm_func_3(struct espconn* ctx, const char* const parm){
+	os_printf("arm_func_3  \n");
+
+	jsontree_send(ctx,getArm3Tree(),"arm3");
+
+}
+
+
+
+
 static
 void config_func_wifi(struct espconn* ctx, const char* const parm){
-	struct softap_config *ap_conf = (struct softap_config *)os_zalloc(sizeof(struct softap_config));;
-	struct station_config *sta_conf = (struct station_config *)os_zalloc(sizeof(struct station_config));;
+	struct softap_config *ap_conf = (struct softap_config *)os_zalloc(sizeof(struct softap_config));
+	struct station_config *sta_conf = (struct station_config *)os_zalloc(sizeof(struct station_config));
 //	json_send(ptrespconn, WIFI);
-	//	jsontree_send(ctx,wifi_info_tree, "wifi");
+//	jsontree_send(ctx,wifi_info_tree, "wifi");
 	os_free(sta_conf);
 	os_free(ap_conf);
 }
@@ -175,11 +256,30 @@ const struct ProcCommand_t upgrade_cmd_getuser = {
 		"getuser",	upgrade_func_getuser
 };
 static
+const struct ProcCommand_t setlight[] = {
+		{"on",      setlight_func_on},
+		{"off",     setlight_func_off},
+};
+
+static 
+const struct ProcCommand_t car_control_cmds[] = {
+		{"forward", controlcar_func_forward},
+		{"left",    controlcar_func_left},
+		{"right",   controlcar_func_right},
+		{"stop",    controlcar_func_stop},
+		{"back",    controlcar_func_back},
+		{"arm1",    arm_func_1},
+		{"arm2",    arm_func_2},
+		{"arm3",    arm_func_3},
+};
+static
 const struct ProcSelect_t selects[] = {
 		{"weight", 		&weight_cmd_info, 			1},
 		{"client", 		client_cmds, 				ARRAY_SIZE(client_cmds)},
 		{"config", 		config_cmds, 				ARRAY_SIZE(config_cmds)},
 		{"upgrade", 	&upgrade_cmd_getuser, 		1},
+		{"setlight",    setlight,                   ARRAY_SIZE(setlight)},
+		{"controlcar",  car_control_cmds,           ARRAY_SIZE(car_control_cmds)},
 };
 
 /**
@@ -188,11 +288,11 @@ const struct ProcSelect_t selects[] = {
  * return:		void (*func)(struct espconn* ctx,const char* const str)
  */
 void* getCommandHandler(const char* const select, const char* const command){
-	const struct ProcSelect_t *psel = getSelect(selects, ARRAY_SIZE(selects), select);
+	const struct ProcSelect_t *psel = getSelect(selects, ARRAY_SIZE(selects), select);//找到select
 	if(psel != NULL){
 		const struct ProcCommand_t* pcmd = getCommand(psel->commands, psel->count, command);
 		if(pcmd != NULL){
-			return pcmd->func;
+			return pcmd->func;   //返回command实现函数指针
 		}
 	}
 	return NULL;

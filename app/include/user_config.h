@@ -25,7 +25,7 @@
 //#define CLIENT_SSL_ENABLE
 //#define UPGRADE_SSL_ENABLE
 
-//#define USE_DNS
+#define USE_DNS
 
 #ifdef USE_DNS
 #define ESP_DOMAIN      "iot.espressif.cn"
@@ -34,9 +34,12 @@
 #define SOFTAP_ENCRYPT
 
 #ifdef SOFTAP_ENCRYPT
-#define AP_SSID		"ZKWIFI"
+#define AP_SSID		"ZKJC"
 #define PASSWORD	"12345678"
+#define TCP_SERVER_PORT 5000
+
 #endif
+
 
 #if SENSOR_DEVICE
 #define SENSOR_DEEP_SLEEP

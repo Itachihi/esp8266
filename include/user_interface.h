@@ -162,13 +162,13 @@ bool wifi_station_scan(struct scan_config *config, scan_done_cb_t cb);
 uint8 wifi_station_get_auto_connect(void);
 bool wifi_station_set_auto_connect(uint8 set);
 
-enum {
+enum {            // stationģʽ״̬
     STATION_IDLE = 0,
-    STATION_CONNECTING,
-    STATION_WRONG_PASSWORD,
-    STATION_NO_AP_FOUND,
-    STATION_CONNECT_FAIL,
-    STATION_GOT_IP
+    STATION_CONNECTING,    //  1
+    STATION_WRONG_PASSWORD,//  2
+    STATION_NO_AP_FOUND,   //  3
+    STATION_CONNECT_FAIL,  //  4
+    STATION_GOT_IP         //  5
 };
 
 enum dhcp_status {

@@ -54,7 +54,7 @@ key_init(struct keys_param *keys)
 {
     uint8 i;
 
-    ETS_GPIO_INTR_ATTACH(key_intr_handler, keys);
+    ETS_GPIO_INTR_ATTACH(key_intr_handler, keys);//×¢²áÖÐ¶Ïº¯Êý
 
     ETS_GPIO_INTR_DISABLE();
 

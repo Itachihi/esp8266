@@ -197,6 +197,7 @@ espconn_tcp_sent(void *arg, uint8 *psent, uint16 length)
     } else {
     	ptcp_sent->pespconn ->state = ESPCONN_CLOSE;
     }
+	//os_printf("espconn_tcp_sent\n");
 }
 
 /******************************************************************************

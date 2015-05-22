@@ -240,6 +240,8 @@
 #define FUNC_GPIO4                      0
 #define PERIPHS_IO_MUX_GPIO5_U          (PERIPHS_IO_MUX + 0x40)
 #define FUNC_GPIO5                      0
+//#define FUNC_GPIO5                      3
+
 
 #define PIN_PULLUP_DIS(PIN_NAME)                 CLEAR_PERI_REG_MASK(PIN_NAME, PERIPHS_IO_MUX_PULLUP)
 #define PIN_PULLUP_EN(PIN_NAME)                  SET_PERI_REG_MASK(PIN_NAME, PERIPHS_IO_MUX_PULLUP)

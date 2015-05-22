@@ -1,9 +1,9 @@
-
-
 #include "os_type.h"
 #include "osapi.h"
 #include "json/jsontree.h"
 #include "user_iot_version.h"
+#include "user.h"
+#include "driver/pwm.h"
 
 /******************************************************************************
  * FunctionName : version_get
@@ -30,8 +30,9 @@ version_get(struct jsontree_context *js_ctx)
     	IOT_VERSION_MINOR,IOT_VERSION_REVISION,device_type,UPGRADE_FALG);
     }
 
+	os_printf("version get \n");
     jsontree_write_string(js_ctx, string);
-
+	
     return 0;
 }
 /******************************************************************************
@@ -81,7 +82,7 @@ JSONTREE_OBJECT(version_tree,
                 JSONTREE_PAIR("iot_version", &version_callback),
                 );
 JSONTREE_OBJECT(info_tree,
-                JSONTREE_PAIR("Version", &version_tree),
+				JSONTREE_PAIR("Version", &version_tree),
                 JSONTREE_PAIR("Device", &device_tree));
 
 JSONTREE_OBJECT(INFOTree,
@@ -90,6 +91,310 @@ JSONTREE_OBJECT(INFOTree,
 struct jsontree_value* getINFOTree(void){
 	return (struct jsontree_value *)&INFOTree;
 }
+
+
+
+/**********    set   light **********************************************************/
+LOCAL int ICACHE_FLASH_ATTR
+light_set(struct jsontree_context *js_ctx){
+
+	uint8_t data;
+	const char *path = jsontree_path_name(js_ctx, js_ctx->depth - 2);
+
+    if (os_strncmp(path, "on", 2) == 0) {
+		GPIO_OUTPUT_SET(GPIO_ID_PIN(LED_ONEKEY_NUM),LED_ON);
+    } else if (os_strncmp(path, "off", 3) == 0) {
+        GPIO_OUTPUT_SET(GPIO_ID_PIN(LED_ONEKEY_NUM),LED_OFF);
+    } 
+
+	data=GPIO_INPUT_GET(GPIO_ID_PIN(LED_ONEKEY_NUM));
+	if(data){
+		jsontree_write_string(js_ctx, "OFF");
+	}else{
+		jsontree_write_string(js_ctx, "ON");
+		//jsontree_write_int(js_ctx,data);
+	}
+	
+	return 0;
+}
+
+
+LOCAL struct jsontree_callback lightset_callback =
+	JSONTREE_CALLBACK(light_set,NULL);
+
+
+JSONTREE_OBJECT(lighton_tree,
+				JSONTREE_PAIR("light", &lightset_callback));
+
+JSONTREE_OBJECT(LightOnTree,
+                JSONTREE_PAIR("on", &lighton_tree));
+
+struct jsontree_value* getSetLightOnTree(void){
+	return (struct jsontree_value *)&LightOnTree;
+}
+JSONTREE_OBJECT(lightoff_tree,
+				JSONTREE_PAIR("light", &lightset_callback));
+
+JSONTREE_OBJECT(LightOffTree,
+                JSONTREE_PAIR("off", &lightoff_tree));
+
+struct jsontree_value* getSetLightOffTree(void){
+	return (struct jsontree_value *)&LightOffTree;
+}
+
+/**************   car control   *****************************************/
+LOCAL unsigned char TxBuf1[] = "PL0\r\n";
+LOCAL unsigned char TxBuf2[] = "PL0 SQ0 ONCE100\r\n ";
+LOCAL unsigned char TxBuf3[] = "PL0 SQ1 ONCE100\r\n";
+LOCAL os_timer_t pwm_timer;
+LOCAL unsigned char flag=0;
+LOCAL uint8_t stop_flag=1;
+
+LOCAL void ICACHE_FLASH_ATTR
+pwm_timer_set(void){
+	static unsigned int  i=0,j=255;
+	unsigned int duty;
+	if(flag==0){
+		if(stop_flag==1){
+			i++;
+			pwm_set_duty(i,0);
+			pwm_set_duty(i,1);
+			pwm_set_duty(i,2);
+	 	   	pwm_set_duty(i,3);
+			pwm_start();
+		//	duty=pwm_get_duty(0);
+		//	os_printf("pwm is:%d\n",duty);
+			if(i >= 255){
+				os_timer_disarm(&pwm_timer);
+				i=0;
+			}
+		}else{
+			pwm_set_duty(255,0);
+			pwm_set_duty(255,1);
+			pwm_set_duty(255,2);
+			pwm_set_duty(255,3);
+			pwm_start();
+			os_timer_disarm(&pwm_timer);
+		}
+//		duty=pwm_get_duty(0);
+//		os_printf("pwm:%d\n",duty);
+	}
+	else if(flag==1){
+		if(stop_flag==0){
+			j--;
+			pwm_set_duty(j,  0);
+			pwm_set_duty(255,1);
+			pwm_set_duty(j,  2);
+			pwm_set_duty(255,3);
+			pwm_start();
+			if(j==0){
+				os_timer_disarm(&pwm_timer);
+				j=255;
+			}
+		}else{
+			i++;
+			pwm_set_duty(0,  0);
+			pwm_set_duty(i,1);
+			pwm_set_duty(0,  2);
+			pwm_set_duty(i,3);
+			pwm_start();
+			if(i >= 255){
+				os_timer_disarm(&pwm_timer);
+				i=100;
+			}
+		}	
+	}else if(flag==2){
+		if(stop_flag==0){
+			j--;
+			pwm_set_duty(255,0);
+			pwm_set_duty(j,1);
+			pwm_set_duty(255,2);
+			pwm_set_duty(j,3);
+			pwm_start();
+			if(j==0){
+				os_timer_disarm(&pwm_timer);
+				j=255;
+			}
+		}else{
+			i++;
+			pwm_set_duty(i,0);
+			pwm_set_duty(0,1);
+			pwm_set_duty(i,2);
+			pwm_set_duty(0,3);
+			pwm_start();
+			if(i >= 255){
+				os_timer_disarm(&pwm_timer);
+				i=100;
+			}
+		}	
+
+	}
+	else if(flag==3){
+		if(stop_flag==0){
+			j--;
+			pwm_set_duty(j,0);
+			pwm_set_duty(j,1);
+			pwm_set_duty(j,2);
+			pwm_set_duty(j,3);
+			pwm_start();
+			if(j==0){
+				os_timer_disarm(&pwm_timer);
+				j=255;
+			}
+		}else {
+			pwm_set_duty(0,0);
+			pwm_set_duty(0,1);
+			pwm_set_duty(0,2);
+			pwm_set_duty(0,3);
+			pwm_start();
+			os_timer_disarm(&pwm_timer);
+		}	
+	}
+}
+
+LOCAL int ICACHE_FLASH_ATTR
+controlcar(struct jsontree_context *js_ctx){
+
+	uint8_t data,i=255;
+
+	const char *path = jsontree_path_name(js_ctx, js_ctx->depth - 2);
+
+	//	os_printf("%s \n",path);
+	GPIO_OUTPUT_SET(GPIO_ID_PIN(0),0);
+	
+	if(0 == os_strncmp(path,"arm1",4)){
+		uart0_sendStr(TxBuf1);
+		jsontree_write_string(js_ctx, "arm1");
+	}
+	else if(0 == os_strncmp(path,"arm2",4)){
+		uart0_sendStr(TxBuf2);
+		jsontree_write_string(js_ctx, "arm2");
+	}else if(0 == os_strncmp(path,"arm3",4)){
+		uart0_sendStr(TxBuf3);
+		jsontree_write_string(js_ctx, "arm3");
+	}
+	
+    if(0 == os_strncmp(path, "forward", 7)){
+		flag=0;		
+		os_timer_setfn(&pwm_timer,pwm_timer_set,NULL);
+		os_timer_arm(&pwm_timer,10,1);
+		stop_flag=0;
+		jsontree_write_string(js_ctx, "forward");
+    }
+	else if (0 == os_strncmp(path, "left", 4)) {
+    	 flag=1;	
+         os_timer_setfn(&pwm_timer,pwm_timer_set,NULL);
+		 os_timer_arm(&pwm_timer,10,1);
+         stop_flag=0;
+		jsontree_write_string(js_ctx, "left");
+    }else if(0 == os_strncmp(path, "right", 5)){
+    	 flag==2;
+		 os_timer_setfn(&pwm_timer,pwm_timer_set,NULL);
+		 os_timer_arm(&pwm_timer,10,1);    
+		 stop_flag=0;
+		jsontree_write_string(js_ctx, "right");
+	}else if(0 == os_strncmp(path, "stop", 4)){
+		 flag=3;
+		 os_timer_setfn(&pwm_timer,pwm_timer_set,NULL);
+		 os_timer_arm(&pwm_timer,10,1);
+		 stop_flag=1;
+		jsontree_write_string(js_ctx, "stop");
+	}else if(0 == os_strncmp(path, "back", 4)){
+		GPIO_OUTPUT_SET(GPIO_ID_PIN(0),1);
+		pwm_set_duty(0,0);
+		pwm_set_duty(0,1);
+		pwm_set_duty(0,2);
+		pwm_set_duty(0,3);
+		pwm_start();
+		jsontree_write_string(js_ctx, "back");
+	}
+
+	return 0;
+}
+
+
+LOCAL struct jsontree_callback carcontrol_callback =
+	JSONTREE_CALLBACK(controlcar,NULL);
+
+JSONTREE_OBJECT(gofoward_tree,
+				JSONTREE_PAIR("car", &carcontrol_callback));
+
+JSONTREE_OBJECT(GoForwardTree,
+                JSONTREE_PAIR("forward", &gofoward_tree));
+
+struct jsontree_value* getControlCarForwardTree(void){
+	return (struct jsontree_value *)&GoForwardTree;
+}
+
+JSONTREE_OBJECT(goleft_tree,
+				JSONTREE_PAIR("car", &carcontrol_callback));
+
+JSONTREE_OBJECT(GoLeftTree,
+                JSONTREE_PAIR("left", &goleft_tree));
+
+struct jsontree_value* getControlCarLeftTree(void){
+	return (struct jsontree_value *)&GoLeftTree;
+}
+
+JSONTREE_OBJECT(goright_tree,
+				JSONTREE_PAIR("car", &carcontrol_callback));
+
+JSONTREE_OBJECT(GoRightTree,
+                JSONTREE_PAIR("right", &goright_tree));
+
+struct jsontree_value* getControlCarRightTree(void){
+	return (struct jsontree_value *)&GoRightTree;
+}
+
+JSONTREE_OBJECT(stop_tree,
+				JSONTREE_PAIR("car", &carcontrol_callback));
+
+JSONTREE_OBJECT(StopTree,
+                JSONTREE_PAIR("stop", &stop_tree));
+
+struct jsontree_value* getControlCarStopTree(void){
+	return (struct jsontree_value *)&StopTree;
+}
+
+JSONTREE_OBJECT(back_tree,
+				JSONTREE_PAIR("car", &carcontrol_callback));
+
+JSONTREE_OBJECT(BackTree,
+                JSONTREE_PAIR("back", &back_tree));
+
+struct jsontree_value* getControlCarBackTree(void){
+	return (struct jsontree_value *)&BackTree;
+}
+
+JSONTREE_OBJECT(arm1_tree,
+				JSONTREE_PAIR("car", &carcontrol_callback));
+
+JSONTREE_OBJECT(Arm1Tree,
+                JSONTREE_PAIR("arm1", &arm1_tree));
+
+struct jsontree_value* getArm1Tree(void){
+	return (struct jsontree_value *)&Arm1Tree;
+}
+JSONTREE_OBJECT(arm2_tree,
+				JSONTREE_PAIR("car", &carcontrol_callback));
+
+JSONTREE_OBJECT(Arm2Tree,
+                JSONTREE_PAIR("arm2", &arm2_tree));
+
+struct jsontree_value* getArm2Tree(void){
+	return (struct jsontree_value *)&Arm2Tree;
+}
+
+JSONTREE_OBJECT(arm3_tree,
+				JSONTREE_PAIR("car", &carcontrol_callback));
+
+JSONTREE_OBJECT(Arm3Tree,
+                JSONTREE_PAIR("arm3", &arm3_tree));
+
+struct jsontree_value* getArm3Tree(void){
+	return (struct jsontree_value *)&Arm3Tree;
+}
+
 /*****************************************************************************************/
 
 #if HX711_SUB_DEVICE
