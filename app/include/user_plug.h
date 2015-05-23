@@ -30,8 +30,8 @@
 #define PLUG_STATUS_OUTPUT(pin, on)     GPIO_OUTPUT_SET(pin, on)
 
 struct plug_saved_param {
-    uint8_t status;
-    uint8_t pad[3];
+	uint8_t status;
+	uint8_t pad[3];
 };
 
 void user_plug_init(void);

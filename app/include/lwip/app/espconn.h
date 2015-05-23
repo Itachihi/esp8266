@@ -6,7 +6,7 @@
 
 #if 0
 #define espconn_printf(fmt, args...) os_printf(fmt,## args)
-#else 
+#else
 #define espconn_printf(fmt, args...)
 #endif
 
@@ -43,46 +43,46 @@ typedef void (* espconn_reconnect_callback)(void *arg, sint8 err);
 
 /** Protocol family and type of the espconn */
 enum espconn_type {
-    ESPCONN_INVALID    = 0,
-    /* ESPCONN_TCP Group */
-    ESPCONN_TCP        = 0x10,
-    /* ESPCONN_UDP Group */
-    ESPCONN_UDP        = 0x20,
+	ESPCONN_INVALID    = 0,
+	/* ESPCONN_TCP Group */
+	ESPCONN_TCP        = 0x10,
+	/* ESPCONN_UDP Group */
+	ESPCONN_UDP        = 0x20,
 };
 
 /** Current state of the espconn. Non-TCP espconn are always in state ESPCONN_NONE! */
 enum espconn_state {
-    ESPCONN_NONE,
-    ESPCONN_WAIT,
-    ESPCONN_LISTEN,
-    ESPCONN_CONNECT,
-    ESPCONN_WRITE,
-    ESPCONN_READ,
-    ESPCONN_CLOSE
+	ESPCONN_NONE,
+	ESPCONN_WAIT,
+	ESPCONN_LISTEN,
+	ESPCONN_CONNECT,
+	ESPCONN_WRITE,
+	ESPCONN_READ,
+	ESPCONN_CLOSE
 };
 
 typedef struct _esp_tcp {
-    int remote_port;
-    int local_port;
-    uint8 local_ip[4];
-    uint8 remote_ip[4];
+	int remote_port;
+	int local_port;
+	uint8 local_ip[4];
+	uint8 remote_ip[4];
 	espconn_connect_callback connect_callback;
 	espconn_reconnect_callback reconnect_callback;
 	espconn_connect_callback disconnect_callback;
 } esp_tcp;
 
 typedef struct _esp_udp {
-    int remote_port;
-    int local_port;
-    uint8 local_ip[4];
+	int remote_port;
+	int local_port;
+	uint8 local_ip[4];
 	uint8 remote_ip[4];
 } esp_udp;
 
-typedef struct _remot_info{
+typedef struct _remot_info {
 	enum espconn_state state;
 	int remote_port;
 	uint8 remote_ip[4];
-}remot_info;
+} remot_info;
 
 /** A callback prototype to inform about events for a espconn */
 typedef void (* espconn_recv_callback)(void *arg, char *pdata, unsigned short len);
@@ -90,27 +90,27 @@ typedef void (* espconn_sent_callback)(void *arg);
 
 /** A espconn descriptor */
 struct espconn {
-    /** type of the espconn (TCP, UDP) */
-    enum espconn_type type;
-    /** current state of the espconn */
-    enum espconn_state state;
-    union {
-        esp_tcp *tcp;
-        esp_udp *udp;
-    } proto;
-    /** A callback function that is informed about events for this espconn */
-    espconn_recv_callback recv_callback;
+	/** type of the espconn (TCP, UDP) */
+	enum espconn_type type;
+	/** current state of the espconn */
+	enum espconn_state state;
+	union {
+		esp_tcp *tcp;
+		esp_udp *udp;
+	} proto;
+	/** A callback function that is informed about events for this espconn */
+	espconn_recv_callback recv_callback;
 	espconn_sent_callback sent_callback;
 	uint8 link_cnt;
 	void *reverse;
 };
 
-enum espconn_option{
+enum espconn_option {
 	ESPCONN_REUSEADDR = 1,
 	ESPCONN_END
 };
 
-typedef struct _comon_pkt{
+typedef struct _comon_pkt {
 	void *pcb;
 	int remote_port;
 	uint8 remote_ip[4];
@@ -123,16 +123,16 @@ typedef struct _comon_pkt{
 	uint32 recv_check;
 	enum espconn_option espconn_opt;
 	os_timer_t ptimer;
-}comon_pkt;
+} comon_pkt;
 
-typedef struct _espconn_msg{
+typedef struct _espconn_msg {
 	struct espconn *pespconn;
 	comon_pkt pcommon;
 	uint8 count_opt;
 	void *preverse;
 	void *pssl;
 	struct _espconn_msg *pnext;
-}espconn_msg;
+} espconn_msg;
 
 /******************************************************************************
  * FunctionName : espconn_copy_partial
@@ -150,7 +150,7 @@ void espconn_copy_partial(struct espconn *pesp_dest, struct espconn *pesp_source
  * Returns      : none
 *******************************************************************************/
 
-void espconn_list_creat(espconn_msg **phead, espconn_msg* pinsert);
+void espconn_list_creat(espconn_msg **phead, espconn_msg *pinsert);
 
 /******************************************************************************
  * FunctionName : espconn_list_delete
@@ -159,7 +159,7 @@ void espconn_list_creat(espconn_msg **phead, espconn_msg* pinsert);
  * Returns      : none
 *******************************************************************************/
 
-void espconn_list_delete(espconn_msg **phead, espconn_msg* pdelete);
+void espconn_list_delete(espconn_msg **phead, espconn_msg *pdelete);
 
 /******************************************************************************
  * FunctionName : espconn_find_connection
@@ -276,7 +276,7 @@ extern sint8 espconn_regist_time(struct espconn *espconn, uint32 interval, uint8
  * Description  : Used to specify the function that should be called when data
  * 				  has been successfully delivered to the remote host.
  * Parameters   : struct espconn *espconn -- espconn to set the sent callback
- * 				  espconn_sent_callback sent_cb -- sent callback function to 
+ * 				  espconn_sent_callback sent_cb -- sent callback function to
  * 				  call for this espconn when data is successfully sent
  * Returns      : none
 *******************************************************************************/
@@ -296,10 +296,10 @@ extern sint8 espconn_sent(struct espconn *espconn, uint8 *psent, uint16 length);
 
 /******************************************************************************
  * FunctionName : espconn_regist_connectcb
- * Description  : used to specify the function that should be called when 
- * 				  connects to host. 
- * Parameters   : espconn -- espconn to set the connect callback 
- * 				  connect_cb -- connected callback function to call when connected 
+ * Description  : used to specify the function that should be called when
+ * 				  connects to host.
+ * Parameters   : espconn -- espconn to set the connect callback
+ * 				  connect_cb -- connected callback function to call when connected
  * Returns      : none
 *******************************************************************************/
 
@@ -307,9 +307,9 @@ extern sint8 espconn_regist_connectcb(struct espconn *espconn, espconn_connect_c
 
 /******************************************************************************
  * FunctionName : espconn_regist_recvcb
- * Description  : used to specify the function that should be called when recv 
+ * Description  : used to specify the function that should be called when recv
  * 				  data from host.
- * Parameters   : espconn -- espconn to set the recv callback 
+ * Parameters   : espconn -- espconn to set the recv callback
  * 				  recv_cb -- recv callback function to call when recv data
  * Returns      : none
 *******************************************************************************/
@@ -318,10 +318,10 @@ extern sint8 espconn_regist_recvcb(struct espconn *espconn, espconn_recv_callbac
 
 /******************************************************************************
  * FunctionName : espconn_regist_reconcb
- * Description  : used to specify the function that should be called when connection 
+ * Description  : used to specify the function that should be called when connection
  * 				  because of err disconnect.
- * Parameters   : espconn -- espconn to set the err callback 
- * 				  recon_cb -- err callback function to call when err 
+ * Parameters   : espconn -- espconn to set the err callback
+ * 				  recon_cb -- err callback function to call when err
  * Returns      : none
 *******************************************************************************/
 
@@ -361,7 +361,7 @@ extern sint8 espconn_set_opt(struct espconn *espconn, uint8 opt);
  * Description  : Resolve a hostname (string) into an IP address.
  * Parameters   : pespconn -- espconn to resolve a hostname
  *                hostname -- the hostname that is to be queried
- *                addr -- pointer to a ip_addr_t where to store the address if 
+ *                addr -- pointer to a ip_addr_t where to store the address if
  *                        it is already cached in the dns_table (only valid if
  *                        ESPCONN_OK is returned!)
  *                found -- a callback function to be called on success, failure

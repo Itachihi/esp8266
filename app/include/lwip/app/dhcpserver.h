@@ -1,24 +1,24 @@
 #ifndef __DHCPS_H__
 #define __DHCPS_H__
 
-typedef struct dhcps_state{
-        sint16_t state;
+typedef struct dhcps_state {
+	sint16_t state;
 } dhcps_state;
 
 // ����dhcpclient�Զ����һ��DHCP msg�ṹ��
 typedef struct dhcps_msg {
-        uint8_t op, htype, hlen, hops;
-        uint8_t xid[4];
-        uint16_t secs, flags;
-        uint8_t ciaddr[4];
-        uint8_t yiaddr[4];
-        uint8_t siaddr[4];
-        uint8_t giaddr[4];
-        uint8_t chaddr[16];
-        uint8_t sname[64];
-        uint8_t file[128];
-        uint8_t options[312];
-}dhcps_msg;
+	uint8_t op, htype, hlen, hops;
+	uint8_t xid[4];
+	uint16_t secs, flags;
+	uint8_t ciaddr[4];
+	uint8_t yiaddr[4];
+	uint8_t siaddr[4];
+	uint8_t giaddr[4];
+	uint8_t chaddr[16];
+	uint8_t sname[64];
+	uint8_t file[128];
+	uint8_t options[312];
+} dhcps_msg;
 
 #ifndef LWIP_OPEN_SRC
 struct dhcps_lease {
@@ -27,16 +27,16 @@ struct dhcps_lease {
 };
 #endif
 
-struct dhcps_pool{
+struct dhcps_pool {
 	struct ip_addr ip;
 	uint8 mac[6];
 	uint32 lease_timer;
 };
 
-typedef struct _list_node{
+typedef struct _list_node {
 	void *pnode;
 	struct _list_node *pnext;
-}list_node;
+} list_node;
 
 #define DHCPS_LEASE_TIMER 0x05A0
 #define DHCPS_MAX_LEASE 0x64

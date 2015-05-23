@@ -1,18 +1,18 @@
 /*
  * Copyright (c) 2007, Cameron Rich
- * 
+ *
  * All rights reserved.
- * 
- * Redistribution and use in source and binary forms, with or without 
+ *
+ * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * * Redistributions of source code must retain the above copyright notice, 
+ * * Redistributions of source code must retain the above copyright notice,
  *   this list of conditions and the following disclaimer.
- * * Redistributions in binary form must reproduce the above copyright notice, 
- *   this list of conditions and the following disclaimer in the documentation 
+ * * Redistributions in binary form must reproduce the above copyright notice,
+ *   this list of conditions and the following disclaimer in the documentation
  *   and/or other materials provided with the distribution.
- * * Neither the name of the axTLS project nor the names of its contributors 
- *   may be used to endorse or promote products derived from this software 
+ * * Neither the name of the axTLS project nor the names of its contributors
+ *   may be used to endorse or promote products derived from this software
  *   without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
@@ -52,7 +52,7 @@ extern "C" {
 
 
 /* enable features based on a 'super-set' capbaility. */
-#if defined(CONFIG_SSL_FULL_MODE) 
+#if defined(CONFIG_SSL_FULL_MODE)
 #define CONFIG_SSL_ENABLE_CLIENT
 #define CONFIG_SSL_CERT_VERIFICATION
 #elif defined(CONFIG_SSL_ENABLE_CLIENT)
@@ -60,48 +60,45 @@ extern "C" {
 #endif
 
 /**************************************************************************
- * AES declarations 
+ * AES declarations
  **************************************************************************/
 
 #define AES_MAXROUNDS			14
 #define AES_BLOCKSIZE           16
 #define AES_IV_SIZE             16
 
-typedef struct aes_key_st 
-{
-    uint16_t rounds;
-    uint16_t key_size;
-    uint32_t ks[(AES_MAXROUNDS+1)*8];
-    uint8_t iv[AES_IV_SIZE];
+typedef struct aes_key_st {
+	uint16_t rounds;
+	uint16_t key_size;
+	uint32_t ks[(AES_MAXROUNDS + 1) * 8];
+	uint8_t iv[AES_IV_SIZE];
 } AES_CTX;
 
-typedef enum
-{
-    AES_MODE_128,
-    AES_MODE_256
+typedef enum {
+	AES_MODE_128,
+	AES_MODE_256
 } AES_MODE;
 
-void AES_set_key(AES_CTX *ctx, const uint8_t *key, 
-        const uint8_t *iv, AES_MODE mode);
-void AES_cbc_encrypt(AES_CTX *ctx, const uint8_t *msg, 
-        uint8_t *out, int length);
+void AES_set_key(AES_CTX *ctx, const uint8_t *key,
+				 const uint8_t *iv, AES_MODE mode);
+void AES_cbc_encrypt(AES_CTX *ctx, const uint8_t *msg,
+					 uint8_t *out, int length);
 void AES_cbc_decrypt(AES_CTX *ks, const uint8_t *in, uint8_t *out, int length);
 void AES_convert_key(AES_CTX *ctx);
 
 /**************************************************************************
- * RC4 declarations 
+ * RC4 declarations
  **************************************************************************/
 
-typedef struct 
-{
-    uint8_t x, y, m[256];
+typedef struct {
+	uint8_t x, y, m[256];
 } RC4_CTX;
 
 void RC4_setup(RC4_CTX *s, const uint8_t *key, int length);
 void RC4_crypt(RC4_CTX *s, const uint8_t *msg, uint8_t *data, int length);
 
 /**************************************************************************
- * SHA1 declarations 
+ * SHA1 declarations
  **************************************************************************/
 
 #define SHA1_SIZE   20
@@ -110,31 +107,29 @@ void RC4_crypt(RC4_CTX *s, const uint8_t *msg, uint8_t *data, int length);
  *  This structure will hold context information for the SHA-1
  *  hashing operation
  */
-typedef struct 
-{
-    uint32_t Intermediate_Hash[SHA1_SIZE/4]; /* Message Digest */
-    uint32_t Length_Low;            /* Message length in bits */
-    uint32_t Length_High;           /* Message length in bits */
-    uint16_t Message_Block_Index;   /* Index into message block array   */
-    uint8_t Message_Block[64];      /* 512-bit message blocks */
+typedef struct {
+	uint32_t Intermediate_Hash[SHA1_SIZE / 4]; /* Message Digest */
+	uint32_t Length_Low;            /* Message length in bits */
+	uint32_t Length_High;           /* Message length in bits */
+	uint16_t Message_Block_Index;   /* Index into message block array   */
+	uint8_t Message_Block[64];      /* 512-bit message blocks */
 } SHA1_CTX;
 
 void SHA1_Init(SHA1_CTX *);
-void SHA1_Update(SHA1_CTX *, const uint8_t * msg, int len);
+void SHA1_Update(SHA1_CTX *, const uint8_t *msg, int len);
 void SHA1_Final(uint8_t *digest, SHA1_CTX *);
 
 /**************************************************************************
- * MD2 declarations 
+ * MD2 declarations
  **************************************************************************/
 
 #define MD2_SIZE 16
 
-typedef struct
-{
-    unsigned char cksum[16];    /* checksum of the data block */
-    unsigned char state[48];    /* intermediate digest state */
-    unsigned char buffer[16];   /* data block being processed */
-    int left;                   /* amount of data in buffer */
+typedef struct {
+	unsigned char cksum[16];    /* checksum of the data block */
+	unsigned char state[48];    /* intermediate digest state */
+	unsigned char buffer[16];   /* data block being processed */
+	int left;                   /* amount of data in buffer */
 } MD2_CTX;
 
 EXP_FUNC void STDCALL MD2_Init(MD2_CTX *ctx);
@@ -142,16 +137,15 @@ EXP_FUNC void STDCALL MD2_Update(MD2_CTX *ctx, const uint8_t *input, int ilen);
 EXP_FUNC void STDCALL MD2_Final(uint8_t *digest, MD2_CTX *ctx);
 
 /**************************************************************************
- * MD5 declarations 
+ * MD5 declarations
  **************************************************************************/
 
 #define MD5_SIZE    16
 
-typedef struct 
-{
-  uint32_t state[4];        /* state (ABCD) */
-  uint32_t count[2];        /* number of bits, modulo 2^64 (lsb first) */
-  uint8_t buffer[64];       /* input buffer */
+typedef struct {
+	uint32_t state[4];        /* state (ABCD) */
+	uint32_t count[2];        /* number of bits, modulo 2^64 (lsb first) */
+	uint8_t buffer[64];       /* input buffer */
 } MD5_CTX;
 
 EXP_FUNC void STDCALL MD5_Init(MD5_CTX *);
@@ -159,63 +153,62 @@ EXP_FUNC void STDCALL MD5_Update(MD5_CTX *, const uint8_t *msg, int len);
 EXP_FUNC void STDCALL MD5_Final(uint8_t *digest, MD5_CTX *);
 
 /**************************************************************************
- * HMAC declarations 
+ * HMAC declarations
  **************************************************************************/
-void ssl_hmac_md5(const uint8_t *msg, int length, const uint8_t *key, 
-        int key_len, uint8_t *digest);// fix hmac_md5 to ssl_hmac_md5, discriminate ieee80211
-void ssl_hmac_sha1(const uint8_t *msg, int length, const uint8_t *key, 
-        int key_len, uint8_t *digest);// fix hmac_md5 to ssl_hmac_sha1, discriminate ieee80211
+void ssl_hmac_md5(const uint8_t *msg, int length, const uint8_t *key,
+				  int key_len, uint8_t *digest);// fix hmac_md5 to ssl_hmac_md5, discriminate ieee80211
+void ssl_hmac_sha1(const uint8_t *msg, int length, const uint8_t *key,
+				   int key_len, uint8_t *digest);// fix hmac_md5 to ssl_hmac_sha1, discriminate ieee80211
 
 /**************************************************************************
- * RSA declarations 
+ * RSA declarations
  **************************************************************************/
 
-typedef struct 
-{
-    bigint *m;              /* modulus */
-    bigint *e;              /* public exponent */
-    bigint *d;              /* private exponent */
+typedef struct {
+	bigint *m;              /* modulus */
+	bigint *e;              /* public exponent */
+	bigint *d;              /* private exponent */
 #ifdef CONFIG_BIGINT_CRT
-    bigint *p;              /* p as in m = pq */
-    bigint *q;              /* q as in m = pq */
-    bigint *dP;             /* d mod (p-1) */
-    bigint *dQ;             /* d mod (q-1) */
-    bigint *qInv;           /* q^-1 mod p */
+	bigint *p;              /* p as in m = pq */
+	bigint *q;              /* q as in m = pq */
+	bigint *dP;             /* d mod (p-1) */
+	bigint *dQ;             /* d mod (q-1) */
+	bigint *qInv;           /* q^-1 mod p */
 #endif
-    int num_octets;
-    BI_CTX *bi_ctx;
+	int num_octets;
+	BI_CTX *bi_ctx;
 } RSA_CTX;
 
-void RSA_priv_key_new(RSA_CTX **rsa_ctx, 
-        const uint8_t *modulus, int mod_len,
-        const uint8_t *pub_exp, int pub_len,
-        const uint8_t *priv_exp, int priv_len
+void RSA_priv_key_new(RSA_CTX **rsa_ctx,
+					  const uint8_t *modulus, int mod_len,
+					  const uint8_t *pub_exp, int pub_len,
+					  const uint8_t *priv_exp, int priv_len
 #ifdef CONFIG_BIGINT_CRT
-      , const uint8_t *p, int p_len,
-        const uint8_t *q, int q_len,
-        const uint8_t *dP, int dP_len,
-        const uint8_t *dQ, int dQ_len,
-        const uint8_t *qInv, int qInv_len
+					  , const uint8_t *p, int p_len,
+					  const uint8_t *q, int q_len,
+					  const uint8_t *dP, int dP_len,
+					  const uint8_t *dQ, int dQ_len,
+					  const uint8_t *qInv, int qInv_len
 #endif
-        );
-void RSA_pub_key_new(RSA_CTX **rsa_ctx, 
-        const uint8_t *modulus, int mod_len,
-        const uint8_t *pub_exp, int pub_len);
+					 );
+void RSA_pub_key_new(RSA_CTX **rsa_ctx,
+					 const uint8_t *modulus, int mod_len,
+					 const uint8_t *pub_exp, int pub_len);
 void RSA_free(RSA_CTX *ctx);
 int RSA_decrypt(const RSA_CTX *ctx, const uint8_t *in_data, uint8_t *out_data,
-        int is_decryption);
+				int is_decryption);
 bigint *RSA_private(const RSA_CTX *c, bigint *bi_msg);
 #if defined(CONFIG_SSL_CERT_VERIFICATION) || defined(CONFIG_SSL_GENERATE_X509_CERT)
 bigint *RSA_sign_verify(BI_CTX *ctx, const uint8_t *sig, int sig_len,
-        bigint *modulus, bigint *pub_exp);
-bigint *RSA_public(const RSA_CTX * c, bigint *bi_msg);
-int RSA_encrypt(const RSA_CTX *ctx, const uint8_t *in_data, uint16_t in_len, 
-        uint8_t *out_data, int is_signing);
+						bigint *modulus, bigint *pub_exp);
+bigint *RSA_public(const RSA_CTX *c, bigint *bi_msg);
+int RSA_encrypt(const RSA_CTX *ctx, const uint8_t *in_data, uint16_t in_len,
+				uint8_t *out_data, int is_signing);
 void RSA_print(const RSA_CTX *ctx);
 #endif
 
 /**************************************************************************
- * RNG declarations 
+ * RNG declarations
  **************************************************************************/
 EXP_FUNC void STDCALL RNG_initialize(void);
 EXP_FUNC void STDCALL RNG_custom_init(const uint8_t *seed_buf, int size);
@@ -227,4 +220,4 @@ void get_random_NZ(int num_rand_bytes, uint8_t *rand_data);
 }
 #endif
 
-#endif 
+#endif

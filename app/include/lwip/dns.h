@@ -1,7 +1,7 @@
 /**
  * lwip DNS resolver header file.
 
- * Author: Jim Pettinato 
+ * Author: Jim Pettinato
  *   April 2007
 
  * ported from uIP resolv.c Copyright (c) 2002-2003, Adam Dunkels.
@@ -80,11 +80,11 @@ extern "C" {
 #if DNS_LOCAL_HOSTLIST
 /** struct used for local host-list */
 struct local_hostlist_entry {
-  /** static hostname */
-  const char *name;
-  /** static host address in network byteorder */
-  ip_addr_t addr;
-  struct local_hostlist_entry *next;
+	/** static hostname */
+	const char *name;
+	/** static host address in network byteorder */
+	ip_addr_t addr;
+	struct local_hostlist_entry *next;
 };
 #if DNS_LOCAL_HOSTLIST_IS_DYNAMIC
 #ifndef DNS_LOCAL_HOSTLIST_MAX_NAMELEN
@@ -108,7 +108,7 @@ void           dns_tmr(void);
 void           dns_setserver(u8_t numdns, ip_addr_t *dnsserver);
 ip_addr_t      dns_getserver(u8_t numdns);
 err_t          dns_gethostbyname(const char *hostname, ip_addr_t *addr,
-                                 dns_found_callback found, void *callback_arg);
+								 dns_found_callback found, void *callback_arg);
 
 #if DNS_LOCAL_HOSTLIST && DNS_LOCAL_HOSTLIST_IS_DYNAMIC
 int            dns_local_removehost(const char *hostname, const ip_addr_t *addr);

@@ -16,9 +16,9 @@
 #endif
 
 #if HX711_SUB_DEVICE == 1
-	#define BLOCK_HX711(a...)	a
+#define BLOCK_HX711(a...)	a
 #else
-	#define BLOCK_HX711(a...)
+#define BLOCK_HX711(a...)
 #endif
 
 //#define SERVER_SSL_ENABLE

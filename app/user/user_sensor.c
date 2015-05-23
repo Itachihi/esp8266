@@ -33,23 +33,19 @@ LOCAL uint32 link_start_time;
 #define FUNC_Sck	FUNC_GPIO12
 #define PINx_Sck	GPIO_ID_PIN(NUM_Sck)
 LOCAL ICACHE_FLASH_ATTR
-void __sck_set(bool b)
-{
+void __sck_set(bool b) {
 	GPIO_OUTPUT_SET(PINx_Sck, b);
 }
 LOCAL ICACHE_FLASH_ATTR
-void __dio_set(bool b)
-{
+void __dio_set(bool b) {
 	GPIO_OUTPUT_SET(PINx_Din, b);
 }
 LOCAL ICACHE_FLASH_ATTR
-uint8 __dio_get(void)
-{
+uint8 __dio_get(void) {
 	return GPIO_INPUT_GET(PINx_Din);
 }
 LOCAL ICACHE_FLASH_ATTR
-void __delayus(uint16 us)
-{
+void __delayus(uint16 us) {
 	os_delay_us(us);
 }
 
@@ -63,28 +59,26 @@ LOCAL HX711_t hx711 = {
 };
 
 ICACHE_FLASH_ATTR
-void user_hx711_init(void)
-{
+void user_hx711_init(void) {
 	HX711_t *hx = &hx711;
 
 	PIN_FUNC_SELECT(GPIOx_Din, FUNC_Din);
 	PIN_FUNC_SELECT(GPIOx_Sck, FUNC_Sck);
 
-    GPIO_REG_WRITE(GPIO_PIN_ADDR(PINx_Din), GPIO_REG_READ(GPIO_PIN_ADDR(PINx_Din)) | GPIO_PIN_PAD_DRIVER_SET(GPIO_PAD_DRIVER_ENABLE)); //open drain;
-    GPIO_REG_WRITE(GPIO_ENABLE_ADDRESS, GPIO_REG_READ(GPIO_ENABLE_ADDRESS) | (1 << NUM_Din));
-    GPIO_REG_WRITE(GPIO_PIN_ADDR(PINx_Sck), GPIO_REG_READ(GPIO_PIN_ADDR(PINx_Sck)) | GPIO_PIN_PAD_DRIVER_SET(GPIO_PAD_DRIVER_ENABLE)); //open drain;
-    GPIO_REG_WRITE(GPIO_ENABLE_ADDRESS, GPIO_REG_READ(GPIO_ENABLE_ADDRESS) | (1 << NUM_Sck));
+	GPIO_REG_WRITE(GPIO_PIN_ADDR(PINx_Din), GPIO_REG_READ(GPIO_PIN_ADDR(PINx_Din)) | GPIO_PIN_PAD_DRIVER_SET(GPIO_PAD_DRIVER_ENABLE)); //open drain;
+	GPIO_REG_WRITE(GPIO_ENABLE_ADDRESS, GPIO_REG_READ(GPIO_ENABLE_ADDRESS) | (1 << NUM_Din));
+	GPIO_REG_WRITE(GPIO_PIN_ADDR(PINx_Sck), GPIO_REG_READ(GPIO_PIN_ADDR(PINx_Sck)) | GPIO_PIN_PAD_DRIVER_SET(GPIO_PAD_DRIVER_ENABLE)); //open drain;
+	GPIO_REG_WRITE(GPIO_ENABLE_ADDRESS, GPIO_REG_READ(GPIO_ENABLE_ADDRESS) | (1 << NUM_Sck));
 
 	HX711_Start(hx);
-	HX711_SetMode(hx,HX711_Mode_A_64);
+	HX711_SetMode(hx, HX711_Mode_A_64);
 	HX711_Mearsure(hx);
 	os_delay_us(10);
 	HX711_Read(hx);
 }
 
 ICACHE_FLASH_ATTR
-uint32 user_hx711_read(void)
-{
+uint32 user_hx711_read(void) {
 	HX711_t *hx = &hx711;
 	HX711_Mearsure(hx);
 	os_delay_us(100);
@@ -92,13 +86,12 @@ uint32 user_hx711_read(void)
 }
 
 LOCAL ICACHE_FLASH_ATTR
-void user_hx711_time_callback(void *arg)
-{
+void user_hx711_time_callback(void *arg) {
 	static uint8 step = 0;
 	HX711_t *hx = &hx711;
-	if((step++ & 0x01) == 0){
+	if ((step++ & 0x01) == 0) {
 		HX711_Mearsure(hx);
-	}else{
+	} else {
 		uint32 data = HX711_Read(hx);
 		os_printf("hx: %d\n", data);
 	}
@@ -106,64 +99,56 @@ void user_hx711_time_callback(void *arg)
 #endif
 
 LOCAL ICACHE_FLASH_ATTR
-void user_link_led_init(void)
-{
-    PIN_FUNC_SELECT(SENSOR_LINK_LED_IO_MUX, SENSOR_LINK_LED_IO_FUNC);
-    PIN_FUNC_SELECT(SENSOR_UNUSED_LED_IO_MUX, SENSOR_UNUSED_LED_IO_FUNC);
-    GPIO_OUTPUT_SET(GPIO_ID_PIN(SENSOR_UNUSED_LED_IO_NUM), 0);
+void user_link_led_init(void) {
+	PIN_FUNC_SELECT(SENSOR_LINK_LED_IO_MUX, SENSOR_LINK_LED_IO_FUNC);
+	PIN_FUNC_SELECT(SENSOR_UNUSED_LED_IO_MUX, SENSOR_UNUSED_LED_IO_FUNC);
+	GPIO_OUTPUT_SET(GPIO_ID_PIN(SENSOR_UNUSED_LED_IO_NUM), 0);
 }
 
 ICACHE_FLASH_ATTR
-void user_link_led_output(uint8 level)
-{
-    GPIO_OUTPUT_SET(GPIO_ID_PIN(SENSOR_LINK_LED_IO_NUM), level);
+void user_link_led_output(uint8 level) {
+	GPIO_OUTPUT_SET(GPIO_ID_PIN(SENSOR_LINK_LED_IO_NUM), level);
 }
 
 LOCAL ICACHE_FLASH_ATTR
-void user_link_led_timer_cb(void)
-{
-    link_led_level = (~link_led_level) & 0x01;
-    GPIO_OUTPUT_SET(GPIO_ID_PIN(SENSOR_LINK_LED_IO_NUM), link_led_level);
+void user_link_led_timer_cb(void) {
+	link_led_level = (~link_led_level) & 0x01;
+	GPIO_OUTPUT_SET(GPIO_ID_PIN(SENSOR_LINK_LED_IO_NUM), link_led_level);
 }
 
 ICACHE_FLASH_ATTR
-void user_link_led_timer_init(void)
-{
-    link_start_time = system_get_time();
+void user_link_led_timer_init(void) {
+	link_start_time = system_get_time();
 
-    os_timer_disarm(&link_led_timer);
-    os_timer_setfn(&link_led_timer, (os_timer_func_t *)user_link_led_timer_cb, NULL);
-    os_timer_arm(&link_led_timer, 50, 1);
-    link_led_level = 0;
-    GPIO_OUTPUT_SET(GPIO_ID_PIN(SENSOR_LINK_LED_IO_NUM), link_led_level);
+	os_timer_disarm(&link_led_timer);
+	os_timer_setfn(&link_led_timer, (os_timer_func_t *)user_link_led_timer_cb, NULL);
+	os_timer_arm(&link_led_timer, 50, 1);
+	link_led_level = 0;
+	GPIO_OUTPUT_SET(GPIO_ID_PIN(SENSOR_LINK_LED_IO_NUM), link_led_level);
 }
 
 ICACHE_FLASH_ATTR
-void user_link_led_timer_done(void)
-{
-    os_timer_disarm(&link_led_timer);
-    GPIO_OUTPUT_SET(GPIO_ID_PIN(SENSOR_LINK_LED_IO_NUM), 0);
+void user_link_led_timer_done(void) {
+	os_timer_disarm(&link_led_timer);
+	GPIO_OUTPUT_SET(GPIO_ID_PIN(SENSOR_LINK_LED_IO_NUM), 0);
 }
 
 ICACHE_FLASH_ATTR
-void user_sensor_deep_sleep_enter(void)
-{
-    system_deep_sleep(SENSOR_DEEP_SLEEP_TIME > link_start_time \
-    ? SENSOR_DEEP_SLEEP_TIME - link_start_time : 30000000);
+void user_sensor_deep_sleep_enter(void) {
+	system_deep_sleep(SENSOR_DEEP_SLEEP_TIME > link_start_time \
+					  ? SENSOR_DEEP_SLEEP_TIME - link_start_time : 30000000);
 }
 
 ICACHE_FLASH_ATTR
-void user_sensor_deep_sleep_disable(void)
-{
-    os_timer_disarm(&sensor_sleep_timer);
+void user_sensor_deep_sleep_disable(void) {
+	os_timer_disarm(&sensor_sleep_timer);
 }
 
 ICACHE_FLASH_ATTR
-void user_sensor_deep_sleep_init(uint32 time)
-{
-    os_timer_disarm(&sensor_sleep_timer);
-    os_timer_setfn(&sensor_sleep_timer, (os_timer_func_t *)user_sensor_deep_sleep_enter, NULL);
-    os_timer_arm(&sensor_sleep_timer, time, 0);
+void user_sensor_deep_sleep_init(uint32 time) {
+	os_timer_disarm(&sensor_sleep_timer);
+	os_timer_setfn(&sensor_sleep_timer, (os_timer_func_t *)user_sensor_deep_sleep_enter, NULL);
+	os_timer_arm(&sensor_sleep_timer, time, 0);
 }
 
 /******************************************************************************
@@ -173,8 +158,7 @@ void user_sensor_deep_sleep_init(uint32 time)
  * Returns      : none
 *******************************************************************************/
 ICACHE_FLASH_ATTR
-void user_sensor_init(uint8 active)
-{
+void user_sensor_init(uint8 active) {
 
 #if HX711_SUB_DEVICE
 	user_hx711_init();
@@ -183,13 +167,13 @@ void user_sensor_init(uint8 active)
 #endif
 
 #ifdef SENSOR_DEEP_SLEEP
-    if (wifi_get_opmode() != STATIONAP_MODE) {
-        if (active == 1) {
-            user_sensor_deep_sleep_init(SENSOR_DEEP_SLEEP_TIME / 1000 );
-        } else {
-            user_sensor_deep_sleep_init(SENSOR_DEEP_SLEEP_TIME / 1000 / 3 * 2);
-        }
-    }
+	if (wifi_get_opmode() != STATIONAP_MODE) {
+		if (active == 1) {
+			user_sensor_deep_sleep_init(SENSOR_DEEP_SLEEP_TIME / 1000);
+		} else {
+			user_sensor_deep_sleep_init(SENSOR_DEEP_SLEEP_TIME / 1000 / 3 * 2);
+		}
+	}
 #endif
 }
 #endif

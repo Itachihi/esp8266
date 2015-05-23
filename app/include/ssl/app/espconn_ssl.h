@@ -7,17 +7,17 @@
 #include "lwip/app/espconn.h"
 
 typedef struct _ssl_msg {
-    SSL_CTX *ssl_ctx;
-    SSL *ssl;
-    bool quiet;
-    char *private_key_file;
-    uint8_t session_id[SSL_SESSION_ID_SIZE];
-    u16_t pkt_length;
+	SSL_CTX *ssl_ctx;
+	SSL *ssl;
+	bool quiet;
+	char *private_key_file;
+	uint8_t session_id[SSL_SESSION_ID_SIZE];
+	u16_t pkt_length;
 } ssl_msg;
 
 /******************************************************************************
  * FunctionName : sslserver_start
- * Description  : Initialize the server: set up a listen PCB and bind it to 
+ * Description  : Initialize the server: set up a listen PCB and bind it to
  *                the defined port
  * Parameters   : espconn -- the espconn used to build client
  * Returns      : none
@@ -27,7 +27,7 @@ extern sint8 espconn_ssl_server(struct espconn *espconn);
 
 /******************************************************************************
  * FunctionName : espconn_ssl_client
- * Description  : Initialize the client: set up a connect PCB and bind it to 
+ * Description  : Initialize the client: set up a connect PCB and bind it to
  *                the defined port
  * Parameters   : espconn -- the espconn used to build client
  * Returns      : none

@@ -47,41 +47,41 @@ struct llc {
 	uint8_t llc_dsap;
 	uint8_t llc_ssap;
 	union {
-	    struct {
-		uint8_t control;
-		uint8_t format_id;
-		uint8_t class;
-		uint8_t window_x2;
-	    } __packed type_u;
-	    struct {
-		uint8_t num_snd_x2;
-		uint8_t num_rcv_x2;
-	    } __packed type_i;
-	    struct {
-		uint8_t control;
-		uint8_t num_rcv_x2;
-	    } __packed type_s;
-	    struct {
-	        uint8_t control;
-		/*
-		 * We cannot put the following fields in a structure because
-		 * the structure rounding might cause padding.
-		 */
-		uint8_t frmr_rej_pdu0;
-		uint8_t frmr_rej_pdu1;
-		uint8_t frmr_control;
-		uint8_t frmr_control_ext;
-		uint8_t frmr_cause;
-	    } __packed type_frmr;
-	    struct {
-		uint8_t  control;
-		uint8_t  org_code[3];
-		uint16_t ether_type;
-	    } __packed type_snap;
-	    struct {
-		uint8_t control;
-		uint8_t control_ext;
-	    } __packed type_raw;
+		struct {
+			uint8_t control;
+			uint8_t format_id;
+			uint8_t class;
+			uint8_t window_x2;
+		} __packed type_u;
+		struct {
+			uint8_t num_snd_x2;
+			uint8_t num_rcv_x2;
+		} __packed type_i;
+		struct {
+			uint8_t control;
+			uint8_t num_rcv_x2;
+		} __packed type_s;
+		struct {
+			uint8_t control;
+			/*
+			 * We cannot put the following fields in a structure because
+			 * the structure rounding might cause padding.
+			 */
+			uint8_t frmr_rej_pdu0;
+			uint8_t frmr_rej_pdu1;
+			uint8_t frmr_control;
+			uint8_t frmr_control_ext;
+			uint8_t frmr_cause;
+		} __packed type_frmr;
+		struct {
+			uint8_t  control;
+			uint8_t  org_code[3];
+			uint16_t ether_type;
+		} __packed type_snap;
+		struct {
+			uint8_t control;
+			uint8_t control_ext;
+		} __packed type_raw;
 	} __packed llc_un;
 } __packed;
 
@@ -115,7 +115,7 @@ struct frmrinfo {
 #define LLC_SNAPFRAMELEN 8
 
 #ifdef CTASSERT
-CTASSERT(sizeof (struct llc) == LLC_SNAPFRAMELEN);
+CTASSERT(sizeof(struct llc) == LLC_SNAPFRAMELEN);
 #endif
 
 /*

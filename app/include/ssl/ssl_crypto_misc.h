@@ -1,18 +1,18 @@
 /*
  * Copyright (c) 2007, Cameron Rich
- * 
+ *
  * All rights reserved.
- * 
- * Redistribution and use in source and binary forms, with or without 
+ *
+ * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * * Redistributions of source code must retain the above copyright notice, 
+ * * Redistributions of source code must retain the above copyright notice,
  *   this list of conditions and the following disclaimer.
- * * Redistributions in binary form must reproduce the above copyright notice, 
- *   this list of conditions and the following disclaimer in the documentation 
+ * * Redistributions in binary form must reproduce the above copyright notice,
+ *   this list of conditions and the following disclaimer in the documentation
  *   and/or other materials provided with the distribution.
- * * Neither the name of the axTLS project nor the names of its contributors 
- *   may be used to endorse or promote products derived from this software 
+ * * Neither the name of the axTLS project nor the names of its contributors
+ *   may be used to endorse or promote products derived from this software
  *   without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
@@ -43,12 +43,12 @@ extern "C" {
 #include "ssl/ssl_bigint.h"
 
 /**************************************************************************
- * X509 declarations 
+ * X509 declarations
  **************************************************************************/
 #define X509_OK                             0
 #define X509_NOT_OK                         -1
 #define X509_VFY_ERROR_NO_TRUSTED_CERT      -2
-#define X509_VFY_ERROR_BAD_SIGNATURE        -3      
+#define X509_VFY_ERROR_BAD_SIGNATURE        -3
 #define X509_VFY_ERROR_NOT_YET_VALID        -4
 #define X509_VFY_ERROR_EXPIRED              -5
 #define X509_VFY_ERROR_SELF_SIGNED          -6
@@ -64,27 +64,25 @@ extern "C" {
 #define X509_ORGANIZATION                   1
 #define X509_ORGANIZATIONAL_UNIT            2
 
-struct _x509_ctx
-{
-    char *ca_cert_dn[X509_NUM_DN_TYPES];
-    char *cert_dn[X509_NUM_DN_TYPES];
-    char **subject_alt_dnsnames;
-    time_t not_before;
-    time_t not_after;
-    uint8_t *signature;
-    uint16_t sig_len;
-    uint8_t sig_type;
-    RSA_CTX *rsa_ctx;
-    bigint *digest;
-    struct _x509_ctx *next;
+struct _x509_ctx {
+	char *ca_cert_dn[X509_NUM_DN_TYPES];
+	char *cert_dn[X509_NUM_DN_TYPES];
+	char **subject_alt_dnsnames;
+	time_t not_before;
+	time_t not_after;
+	uint8_t *signature;
+	uint16_t sig_len;
+	uint8_t sig_type;
+	RSA_CTX *rsa_ctx;
+	bigint *digest;
+	struct _x509_ctx *next;
 };
 
 typedef struct _x509_ctx X509_CTX;
 
 #ifdef CONFIG_SSL_CERT_VERIFICATION
-typedef struct 
-{
-    X509_CTX *cert[CONFIG_X509_MAX_CA_CERTS];
+typedef struct {
+	X509_CTX *cert[CONFIG_X509_MAX_CA_CERTS];
 } CA_CERT_CTX;
 #endif
 
@@ -95,11 +93,11 @@ int x509_verify(const CA_CERT_CTX *ca_cert_ctx, const X509_CTX *cert);
 #endif
 #ifdef CONFIG_SSL_FULL_MODE
 void x509_print(const X509_CTX *cert, CA_CERT_CTX *ca_cert_ctx);
-const char * x509_display_error(int error);
+const char *x509_display_error(int error);
 #endif
 
 /**************************************************************************
- * ASN1 declarations 
+ * ASN1 declarations
  **************************************************************************/
 #define ASN1_INTEGER            0x02
 #define ASN1_BIT_STRING         0x03
@@ -137,36 +135,36 @@ int asn1_name(const uint8_t *cert, int *offset, char *dn[]);
 int asn1_public_key(const uint8_t *cert, int *offset, X509_CTX *x509_ctx);
 #ifdef CONFIG_SSL_CERT_VERIFICATION
 int asn1_signature(const uint8_t *cert, int *offset, X509_CTX *x509_ctx);
-int asn1_find_subjectaltname(const uint8_t* cert, int offset);
-int asn1_compare_dn(char * const dn1[], char * const dn2[]);
+int asn1_find_subjectaltname(const uint8_t *cert, int offset);
+int asn1_compare_dn(char *const dn1[], char *const dn2[]);
 #endif /* CONFIG_SSL_CERT_VERIFICATION */
-int asn1_signature_type(const uint8_t *cert, 
-                                int *offset, X509_CTX *x509_ctx);
+int asn1_signature_type(const uint8_t *cert,
+						int *offset, X509_CTX *x509_ctx);
 
 /**************************************************************************
- * MISC declarations 
+ * MISC declarations
  **************************************************************************/
 #define SALT_SIZE               8
 
-extern const char * const unsupported_str;
+extern const char *const unsupported_str;
 
 typedef void (*crypt_func)(void *, const uint8_t *, uint8_t *, int);
-typedef void (*hmac_func)(const uint8_t *msg, int length, const uint8_t *key, 
-        int key_len, uint8_t *digest);
+typedef void (*hmac_func)(const uint8_t *msg, int length, const uint8_t *key,
+						  int key_len, uint8_t *digest);
 
 int get_file(const char *filename, uint8_t **buf);
 
 #if defined(CONFIG_SSL_FULL_MODE) || defined(WIN32) || defined(CONFIG_DEBUG)
 EXP_FUNC void STDCALL print_blob(const char *format, const uint8_t *data, int size, ...);
 #else
-    #define print_blob(...)
+#define print_blob(...)
 #endif
 
 EXP_FUNC int STDCALL base64_decode(const char *in,  int len,
-                    uint8_t *out, int *outlen);
+								   uint8_t *out, int *outlen);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif 
+#endif

@@ -71,77 +71,76 @@ sys_mutex_t lock_tcpip_core;
  * @param arg unused argument
  */
 static void
-tcpip_thread(void *arg)
-{
-  struct tcpip_msg *msg;
-  LWIP_UNUSED_ARG(arg);
+tcpip_thread(void *arg) {
+	struct tcpip_msg *msg;
+	LWIP_UNUSED_ARG(arg);
 
-  if (tcpip_init_done != NULL) {//用户注册了自定义初始化函数
-    tcpip_init_done(tcpip_init_done_arg);
-  }
+	if (tcpip_init_done != NULL) {//用户注册了自定义初始化函数
+		tcpip_init_done(tcpip_init_done_arg);
+	}
 
-  LOCK_TCPIP_CORE();
-  while (1) {                          /* MAIN Loop */
-    UNLOCK_TCPIP_CORE();
-    LWIP_TCPIP_THREAD_ALIVE();
-    /* wait for a message, timeouts are processed while waiting */
-    sys_timeouts_mbox_fetch(&mbox, (void **)&msg);
-    LOCK_TCPIP_CORE();
-    switch (msg->type) {
+	LOCK_TCPIP_CORE();
+	while (1) {                          /* MAIN Loop */
+		UNLOCK_TCPIP_CORE();
+		LWIP_TCPIP_THREAD_ALIVE();
+		/* wait for a message, timeouts are processed while waiting */
+		sys_timeouts_mbox_fetch(&mbox, (void **)&msg);
+		LOCK_TCPIP_CORE();
+		switch (msg->type) {
 #if LWIP_NETCONN
-    case TCPIP_MSG_API://API调用
-      LWIP_DEBUGF(TCPIP_DEBUG, ("tcpip_thread: API message %p\n", (void *)msg));
-      msg->msg.apimsg->function(&(msg->msg.apimsg->msg));
-      break;
+		case TCPIP_MSG_API://API调用
+			LWIP_DEBUGF(TCPIP_DEBUG, ("tcpip_thread: API message %p\n", (void *)msg));
+			msg->msg.apimsg->function(&(msg->msg.apimsg->msg));
+			break;
 #endif /* LWIP_NETCONN */
 
 #if !LWIP_TCPIP_CORE_LOCKING_INPUT
-    case TCPIP_MSG_INPKT://底层数据包输入
-      LWIP_DEBUGF(TCPIP_DEBUG, ("tcpip_thread: PACKET %p\n", (void *)msg));
+		case TCPIP_MSG_INPKT://底层数据包输入
+			LWIP_DEBUGF(TCPIP_DEBUG, ("tcpip_thread: PACKET %p\n", (void *)msg));
 #if LWIP_ETHERNET
-      if (msg->msg.inp.netif->flags & (NETIF_FLAG_ETHARP | NETIF_FLAG_ETHERNET)) {//支持ARP
-        ethernet_input(msg->msg.inp.p, msg->msg.inp.netif);//交给ARP处理
-      } else
+			if (msg->msg.inp.netif->flags & (NETIF_FLAG_ETHARP | NETIF_FLAG_ETHERNET)) {//支持ARP
+				ethernet_input(msg->msg.inp.p, msg->msg.inp.netif);//交给ARP处理
+			} else
 #endif /* LWIP_ETHERNET */
-      {
-        ip_input(msg->msg.inp.p, msg->msg.inp.netif);//交给IP处理
-      }
-      memp_free(MEMP_TCPIP_MSG_INPKT, msg);
-      break;
+			{
+				ip_input(msg->msg.inp.p, msg->msg.inp.netif);//交给IP处理
+			}
+			memp_free(MEMP_TCPIP_MSG_INPKT, msg);
+			break;
 #endif /* LWIP_TCPIP_CORE_LOCKING_INPUT */
 
 #if LWIP_NETIF_API
-    case TCPIP_MSG_NETIFAPI:
-      LWIP_DEBUGF(TCPIP_DEBUG, ("tcpip_thread: Netif API message %p\n", (void *)msg));
-      msg->msg.netifapimsg->function(&(msg->msg.netifapimsg->msg));
-      break;
+		case TCPIP_MSG_NETIFAPI:
+			LWIP_DEBUGF(TCPIP_DEBUG, ("tcpip_thread: Netif API message %p\n", (void *)msg));
+			msg->msg.netifapimsg->function(&(msg->msg.netifapimsg->msg));
+			break;
 #endif /* LWIP_NETIF_API */
 
-    case TCPIP_MSG_CALLBACK://上层回调方式执行一个函数
-      LWIP_DEBUGF(TCPIP_DEBUG, ("tcpip_thread: CALLBACK %p\n", (void *)msg));
-      msg->msg.cb.function(msg->msg.cb.ctx);
-      memp_free(MEMP_TCPIP_MSG_API, msg);
-      break;
+		case TCPIP_MSG_CALLBACK://上层回调方式执行一个函数
+			LWIP_DEBUGF(TCPIP_DEBUG, ("tcpip_thread: CALLBACK %p\n", (void *)msg));
+			msg->msg.cb.function(msg->msg.cb.ctx);
+			memp_free(MEMP_TCPIP_MSG_API, msg);
+			break;
 
 #if LWIP_TCPIP_TIMEOUT
-    case TCPIP_MSG_TIMEOUT://上层注册一个定时事件
-      LWIP_DEBUGF(TCPIP_DEBUG, ("tcpip_thread: TIMEOUT %p\n", (void *)msg));
-      sys_timeout(msg->msg.tmo.msecs, msg->msg.tmo.h, msg->msg.tmo.arg);
-      memp_free(MEMP_TCPIP_MSG_API, msg);
-      break;
-    case TCPIP_MSG_UNTIMEOUT://上层删除一个定时事件
-      LWIP_DEBUGF(TCPIP_DEBUG, ("tcpip_thread: UNTIMEOUT %p\n", (void *)msg));
-      sys_untimeout(msg->msg.tmo.h, msg->msg.tmo.arg);
-      memp_free(MEMP_TCPIP_MSG_API, msg);
-      break;
+		case TCPIP_MSG_TIMEOUT://上层注册一个定时事件
+			LWIP_DEBUGF(TCPIP_DEBUG, ("tcpip_thread: TIMEOUT %p\n", (void *)msg));
+			sys_timeout(msg->msg.tmo.msecs, msg->msg.tmo.h, msg->msg.tmo.arg);
+			memp_free(MEMP_TCPIP_MSG_API, msg);
+			break;
+		case TCPIP_MSG_UNTIMEOUT://上层删除一个定时事件
+			LWIP_DEBUGF(TCPIP_DEBUG, ("tcpip_thread: UNTIMEOUT %p\n", (void *)msg));
+			sys_untimeout(msg->msg.tmo.h, msg->msg.tmo.arg);
+			memp_free(MEMP_TCPIP_MSG_API, msg);
+			break;
 #endif /* LWIP_TCPIP_TIMEOUT */
 
-    default:
-      LWIP_DEBUGF(TCPIP_DEBUG, ("tcpip_thread: invalid message: %d\n", msg->type));
-      LWIP_ASSERT("tcpip_thread: invalid message", 0);
-      break;
-    }
-  }
+		default:
+			LWIP_DEBUGF(TCPIP_DEBUG, ("tcpip_thread: invalid message: %d\n", msg->type));
+			LWIP_ASSERT("tcpip_thread: invalid message", 0);
+			break;
+		}
+	}
 }
 
 /**
@@ -153,41 +152,40 @@ tcpip_thread(void *arg)
  * @param inp the network interface on which the packet was received
  */
 err_t
-tcpip_input(struct pbuf *p, struct netif *inp)
-{
+tcpip_input(struct pbuf *p, struct netif *inp) {
 #if LWIP_TCPIP_CORE_LOCKING_INPUT
-  err_t ret;
-  LWIP_DEBUGF(TCPIP_DEBUG, ("tcpip_input: PACKET %p/%p\n", (void *)p, (void *)inp));
-  LOCK_TCPIP_CORE();
+	err_t ret;
+	LWIP_DEBUGF(TCPIP_DEBUG, ("tcpip_input: PACKET %p/%p\n", (void *)p, (void *)inp));
+	LOCK_TCPIP_CORE();
 #if LWIP_ETHERNET
-  if (inp->flags & (NETIF_FLAG_ETHARP | NETIF_FLAG_ETHERNET)) {
-    ret = ethernet_input(p, inp);
-  } else
+	if (inp->flags & (NETIF_FLAG_ETHARP | NETIF_FLAG_ETHERNET)) {
+		ret = ethernet_input(p, inp);
+	} else
 #endif /* LWIP_ETHERNET */
-  {
-    ret = ip_input(p, inp);
-  }
-  UNLOCK_TCPIP_CORE();
-  return ret;
+	{
+		ret = ip_input(p, inp);
+	}
+	UNLOCK_TCPIP_CORE();
+	return ret;
 #else /* LWIP_TCPIP_CORE_LOCKING_INPUT */
-  struct tcpip_msg *msg;
+	struct tcpip_msg *msg;
 
-  if (sys_mbox_valid(&mbox)) {
-    msg = (struct tcpip_msg *)memp_malloc(MEMP_TCPIP_MSG_INPKT);
-    if (msg == NULL) {
-      return ERR_MEM;
-    }
+	if (sys_mbox_valid(&mbox)) {
+		msg = (struct tcpip_msg *)memp_malloc(MEMP_TCPIP_MSG_INPKT);
+		if (msg == NULL) {
+			return ERR_MEM;
+		}
 
-    msg->type = TCPIP_MSG_INPKT;
-    msg->msg.inp.p = p;
-    msg->msg.inp.netif = inp;
-    if (sys_mbox_trypost(&mbox, msg) != ERR_OK) {
-      memp_free(MEMP_TCPIP_MSG_INPKT, msg);
-      return ERR_MEM;
-    }
-    return ERR_OK;
-  }
-  return ERR_VAL;
+		msg->type = TCPIP_MSG_INPKT;
+		msg->msg.inp.p = p;
+		msg->msg.inp.netif = inp;
+		if (sys_mbox_trypost(&mbox, msg) != ERR_OK) {
+			memp_free(MEMP_TCPIP_MSG_INPKT, msg);
+			return ERR_MEM;
+		}
+		return ERR_OK;
+	}
+	return ERR_VAL;
 #endif /* LWIP_TCPIP_CORE_LOCKING_INPUT */
 }
 
@@ -203,30 +201,29 @@ tcpip_input(struct pbuf *p, struct netif *inp)
  * @return ERR_OK if the function was called, another err_t if not
  */
 err_t
-tcpip_callback_with_block(tcpip_callback_fn function, void *ctx, u8_t block)
-{
-  struct tcpip_msg *msg;
+tcpip_callback_with_block(tcpip_callback_fn function, void *ctx, u8_t block) {
+	struct tcpip_msg *msg;
 
-  if (sys_mbox_valid(&mbox)) {
-    msg = (struct tcpip_msg *)memp_malloc(MEMP_TCPIP_MSG_API);
-    if (msg == NULL) {
-      return ERR_MEM;
-    }
+	if (sys_mbox_valid(&mbox)) {
+		msg = (struct tcpip_msg *)memp_malloc(MEMP_TCPIP_MSG_API);
+		if (msg == NULL) {
+			return ERR_MEM;
+		}
 
-    msg->type = TCPIP_MSG_CALLBACK;
-    msg->msg.cb.function = function;
-    msg->msg.cb.ctx = ctx;
-    if (block) {
-      sys_mbox_post(&mbox, msg);
-    } else {
-      if (sys_mbox_trypost(&mbox, msg) != ERR_OK) {
-        memp_free(MEMP_TCPIP_MSG_API, msg);
-        return ERR_MEM;
-      }
-    }
-    return ERR_OK;
-  }
-  return ERR_VAL;
+		msg->type = TCPIP_MSG_CALLBACK;
+		msg->msg.cb.function = function;
+		msg->msg.cb.ctx = ctx;
+		if (block) {
+			sys_mbox_post(&mbox, msg);
+		} else {
+			if (sys_mbox_trypost(&mbox, msg) != ERR_OK) {
+				memp_free(MEMP_TCPIP_MSG_API, msg);
+				return ERR_MEM;
+			}
+		}
+		return ERR_OK;
+	}
+	return ERR_VAL;
 }
 
 #if LWIP_TCPIP_TIMEOUT
@@ -239,24 +236,23 @@ tcpip_callback_with_block(tcpip_callback_fn function, void *ctx, u8_t block)
  * @return ERR_MEM on memory error, ERR_OK otherwise
  */
 err_t
-tcpip_timeout(u32_t msecs, sys_timeout_handler h, void *arg)
-{
-  struct tcpip_msg *msg;
+tcpip_timeout(u32_t msecs, sys_timeout_handler h, void *arg) {
+	struct tcpip_msg *msg;
 
-  if (sys_mbox_valid(&mbox)) {
-    msg = (struct tcpip_msg *)memp_malloc(MEMP_TCPIP_MSG_API);
-    if (msg == NULL) {
-      return ERR_MEM;
-    }
+	if (sys_mbox_valid(&mbox)) {
+		msg = (struct tcpip_msg *)memp_malloc(MEMP_TCPIP_MSG_API);
+		if (msg == NULL) {
+			return ERR_MEM;
+		}
 
-    msg->type = TCPIP_MSG_TIMEOUT;
-    msg->msg.tmo.msecs = msecs;
-    msg->msg.tmo.h = h;
-    msg->msg.tmo.arg = arg;
-    sys_mbox_post(&mbox, msg);
-    return ERR_OK;
-  }
-  return ERR_VAL;
+		msg->type = TCPIP_MSG_TIMEOUT;
+		msg->msg.tmo.msecs = msecs;
+		msg->msg.tmo.h = h;
+		msg->msg.tmo.arg = arg;
+		sys_mbox_post(&mbox, msg);
+		return ERR_OK;
+	}
+	return ERR_VAL;
 }
 
 /**
@@ -268,23 +264,22 @@ tcpip_timeout(u32_t msecs, sys_timeout_handler h, void *arg)
  * @return ERR_MEM on memory error, ERR_OK otherwise
  */
 err_t
-tcpip_untimeout(sys_timeout_handler h, void *arg)
-{
-  struct tcpip_msg *msg;
+tcpip_untimeout(sys_timeout_handler h, void *arg) {
+	struct tcpip_msg *msg;
 
-  if (sys_mbox_valid(&mbox)) {
-    msg = (struct tcpip_msg *)memp_malloc(MEMP_TCPIP_MSG_API);
-    if (msg == NULL) {
-      return ERR_MEM;
-    }
+	if (sys_mbox_valid(&mbox)) {
+		msg = (struct tcpip_msg *)memp_malloc(MEMP_TCPIP_MSG_API);
+		if (msg == NULL) {
+			return ERR_MEM;
+		}
 
-    msg->type = TCPIP_MSG_UNTIMEOUT;
-    msg->msg.tmo.h = h;
-    msg->msg.tmo.arg = arg;
-    sys_mbox_post(&mbox, msg);
-    return ERR_OK;
-  }
-  return ERR_VAL;
+		msg->type = TCPIP_MSG_UNTIMEOUT;
+		msg->msg.tmo.h = h;
+		msg->msg.tmo.arg = arg;
+		sys_mbox_post(&mbox, msg);
+		return ERR_OK;
+	}
+	return ERR_VAL;
 }
 #endif /* LWIP_TCPIP_TIMEOUT */
 
@@ -298,22 +293,21 @@ tcpip_untimeout(sys_timeout_handler h, void *arg)
  * @return ERR_OK if the function was called, another err_t if not
  */
 err_t
-tcpip_apimsg(struct api_msg *apimsg)
-{
-  struct tcpip_msg msg;
+tcpip_apimsg(struct api_msg *apimsg) {
+	struct tcpip_msg msg;
 #ifdef LWIP_DEBUG
-  /* catch functions that don't set err */
-  apimsg->msg.err = ERR_VAL;
+	/* catch functions that don't set err */
+	apimsg->msg.err = ERR_VAL;
 #endif
-  
-  if (sys_mbox_valid(&mbox)) {//内核邮箱有效
-    msg.type = TCPIP_MSG_API;
-    msg.msg.apimsg = apimsg;
-    sys_mbox_post(&mbox, &msg);//投递消息
-    sys_arch_sem_wait(&apimsg->msg.conn->op_completed, 0);//等待消息处理完毕
-    return apimsg->msg.err;
-  }
-  return ERR_VAL;
+
+	if (sys_mbox_valid(&mbox)) {//内核邮箱有效
+		msg.type = TCPIP_MSG_API;
+		msg.msg.apimsg = apimsg;
+		sys_mbox_post(&mbox, &msg);//投递消息
+		sys_arch_sem_wait(&apimsg->msg.conn->op_completed, 0);//等待消息处理完毕
+		return apimsg->msg.err;
+	}
+	return ERR_VAL;
 }
 
 #if LWIP_TCPIP_CORE_LOCKING
@@ -326,17 +320,16 @@ tcpip_apimsg(struct api_msg *apimsg)
  * @return ERR_OK (only for compatibility fo tcpip_apimsg())
  */
 err_t
-tcpip_apimsg_lock(struct api_msg *apimsg)
-{
+tcpip_apimsg_lock(struct api_msg *apimsg) {
 #ifdef LWIP_DEBUG
-  /* catch functions that don't set err */
-  apimsg->msg.err = ERR_VAL;
+	/* catch functions that don't set err */
+	apimsg->msg.err = ERR_VAL;
 #endif
 
-  LOCK_TCPIP_CORE();
-  apimsg->function(&(apimsg->msg));
-  UNLOCK_TCPIP_CORE();
-  return apimsg->msg.err;
+	LOCK_TCPIP_CORE();
+	apimsg->function(&(apimsg->msg));
+	UNLOCK_TCPIP_CORE();
+	return apimsg->msg.err;
 
 }
 #endif /* LWIP_TCPIP_CORE_LOCKING */
@@ -352,25 +345,24 @@ tcpip_apimsg_lock(struct api_msg *apimsg)
  * @return error code given back by the function that was called
  */
 err_t
-tcpip_netifapi(struct netifapi_msg* netifapimsg)
-{
-  struct tcpip_msg msg;
-  
-  if (sys_mbox_valid(&mbox)) {
-    err_t err = sys_sem_new(&netifapimsg->msg.sem, 0);
-    if (err != ERR_OK) {
-      netifapimsg->msg.err = err;
-      return err;
-    }
-    
-    msg.type = TCPIP_MSG_NETIFAPI;
-    msg.msg.netifapimsg = netifapimsg;
-    sys_mbox_post(&mbox, &msg);
-    sys_sem_wait(&netifapimsg->msg.sem);
-    sys_sem_free(&netifapimsg->msg.sem);
-    return netifapimsg->msg.err;
-  }
-  return ERR_VAL;
+tcpip_netifapi(struct netifapi_msg *netifapimsg) {
+	struct tcpip_msg msg;
+
+	if (sys_mbox_valid(&mbox)) {
+		err_t err = sys_sem_new(&netifapimsg->msg.sem, 0);
+		if (err != ERR_OK) {
+			netifapimsg->msg.err = err;
+			return err;
+		}
+
+		msg.type = TCPIP_MSG_NETIFAPI;
+		msg.msg.netifapimsg = netifapimsg;
+		sys_mbox_post(&mbox, &msg);
+		sys_sem_wait(&netifapimsg->msg.sem);
+		sys_sem_free(&netifapimsg->msg.sem);
+		return netifapimsg->msg.err;
+	}
+	return ERR_VAL;
 }
 #else /* !LWIP_TCPIP_CORE_LOCKING */
 /**
@@ -382,12 +374,11 @@ tcpip_netifapi(struct netifapi_msg* netifapimsg)
  * @return ERR_OK (only for compatibility fo tcpip_netifapi())
  */
 err_t
-tcpip_netifapi_lock(struct netifapi_msg* netifapimsg)
-{
-  LOCK_TCPIP_CORE();  
-  netifapimsg->function(&(netifapimsg->msg));
-  UNLOCK_TCPIP_CORE();
-  return netifapimsg->msg.err;
+tcpip_netifapi_lock(struct netifapi_msg *netifapimsg) {
+	LOCK_TCPIP_CORE();
+	netifapimsg->function(&(netifapimsg->msg));
+	UNLOCK_TCPIP_CORE();
+	return netifapimsg->msg.err;
 }
 #endif /* !LWIP_TCPIP_CORE_LOCKING */
 #endif /* LWIP_NETIF_API */
@@ -401,22 +392,21 @@ tcpip_netifapi_lock(struct netifapi_msg* netifapimsg)
  * @param arg argument to pass to initfunc
  */
 void
-tcpip_init(tcpip_init_done_fn initfunc, void *arg)
-{
-  lwip_init();//初始化内核
+tcpip_init(tcpip_init_done_fn initfunc, void *arg) {
+	lwip_init();//初始化内核
 
-  tcpip_init_done = initfunc;//注册用户自定义函数
-  tcpip_init_done_arg = arg;//函数参数
-  if(sys_mbox_new(&mbox, TCPIP_MBOX_SIZE) != ERR_OK) {//创建内核邮箱
-    LWIP_ASSERT("failed to create tcpip_thread mbox", 0);
-  }
+	tcpip_init_done = initfunc;//注册用户自定义函数
+	tcpip_init_done_arg = arg;//函数参数
+	if (sys_mbox_new(&mbox, TCPIP_MBOX_SIZE) != ERR_OK) { //创建内核邮箱
+		LWIP_ASSERT("failed to create tcpip_thread mbox", 0);
+	}
 #if LWIP_TCPIP_CORE_LOCKING
-  if(sys_mutex_new(&lock_tcpip_core) != ERR_OK) {
-    LWIP_ASSERT("failed to create lock_tcpip_core", 0);
-  }
+	if (sys_mutex_new(&lock_tcpip_core) != ERR_OK) {
+		LWIP_ASSERT("failed to create lock_tcpip_core", 0);
+	}
 #endif /* LWIP_TCPIP_CORE_LOCKING */
 
-  sys_thread_new(TCPIP_THREAD_NAME, tcpip_thread, NULL, TCPIP_THREAD_STACKSIZE, TCPIP_THREAD_PRIO);//创建内核进程
+	sys_thread_new(TCPIP_THREAD_NAME, tcpip_thread, NULL, TCPIP_THREAD_STACKSIZE, TCPIP_THREAD_PRIO);//创建内核进程
 }
 
 /**
@@ -426,10 +416,9 @@ tcpip_init(tcpip_init_done_fn initfunc, void *arg)
  * @param p The pbuf (chain) to be dereferenced.
  */
 static void
-pbuf_free_int(void *p)
-{
-  struct pbuf *q = (struct pbuf *)p;
-  pbuf_free(q);
+pbuf_free_int(void *p) {
+	struct pbuf *q = (struct pbuf *)p;
+	pbuf_free(q);
 }
 
 /**
@@ -439,9 +428,8 @@ pbuf_free_int(void *p)
  * @return ERR_OK if callback could be enqueued, an err_t if not
  */
 err_t
-pbuf_free_callback(struct pbuf *p)
-{
-  return tcpip_callback_with_block(pbuf_free_int, p, 0);
+pbuf_free_callback(struct pbuf *p) {
+	return tcpip_callback_with_block(pbuf_free_int, p, 0);
 }
 
 /**
@@ -452,9 +440,8 @@ pbuf_free_callback(struct pbuf *p)
  * @return ERR_OK if callback could be enqueued, an err_t if not
  */
 err_t
-mem_free_callback(void *m)
-{
-  return tcpip_callback_with_block(mem_free, m, 0);
+mem_free_callback(void *m) {
+	return tcpip_callback_with_block(mem_free, m, 0);
 }
 
 #endif /* !NO_SYS */

@@ -6,13 +6,13 @@
 struct pwm_single_param {
 	uint16 gpio_set;
 	uint16 gpio_clear;
-    uint16 h_time;
+	uint16 h_time;
 };
 
 struct pwm_param {
-    uint16 period;
-    uint16 freq;
-    uint8  duty[PWM_CHANNEL];
+	uint16 period;
+	uint16 freq;
+	uint8  duty[PWM_CHANNEL];
 };
 
 #define PWM_DEPTH 255
