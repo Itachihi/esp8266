@@ -18,7 +18,7 @@
 #include "user_webserver.h"
 #include "webserver_process.h"
 #include "driver/i2c_master.h"
-#include "at_wifiCmd.h"
+//#include "at_wifiCmd.h"
 
 #define KEY_NUM		1
 LOCAL struct keys_param keys;

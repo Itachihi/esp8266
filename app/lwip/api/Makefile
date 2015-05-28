@@ -15,7 +15,7 @@ ifndef PDIR
 
 GEN_LIBS = liblwipapi.a
 
-		   endif
+endif
 
 
 #############################################################
@@ -25,7 +25,7 @@ GEN_LIBS = liblwipapi.a
 #   makefile at its root level - these are then overridden
 #   for a subtree within the makefile rooted therein
 #
-#DEFINES +=
+#DEFINES += 
 
 #############################################################
 # Recursion Magic - Don't touch this!!
@@ -39,8 +39,8 @@ GEN_LIBS = liblwipapi.a
 # Required for each makefile to inherit from the parent
 #
 
-		   INCLUDES := $(INCLUDES) -I $(PDIR)include
-					   INCLUDES += -I ./
-								   PDIR := ../$(PDIR)
-										   sinclude $(PDIR)Makefile
+INCLUDES := $(INCLUDES) -I $(PDIR)include
+INCLUDES += -I ./
+PDIR := ../$(PDIR)
+sinclude $(PDIR)Makefile
 

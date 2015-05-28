@@ -28,11 +28,11 @@
  * Returns      : none
 *******************************************************************************/
 sint8 ICACHE_FLASH_ATTR
-espconn_secure_connect(struct espconn *espconn) {
-	if (espconn == NULL) {
+espconn_secure_connect(struct espconn *espconn)
+{	
+	if (espconn == NULL)
 		return ESPCONN_ARG;
-	}
-
+	
 	return espconn_ssl_client(espconn);
 }
 
@@ -43,20 +43,20 @@ espconn_secure_connect(struct espconn *espconn) {
  * Returns      : none
 *******************************************************************************/
 sint8 ICACHE_FLASH_ATTR
-espconn_secure_disconnect(struct espconn *espconn) {
+espconn_secure_disconnect(struct espconn *espconn)
+{
 	espconn_msg *pnode = NULL;
 	bool value = false;
-	if (espconn == NULL) {
+	if (espconn == NULL)
 		return ESPCONN_ARG;
-	}
 
 	value = espconn_find_connection(espconn, &pnode);
-	if (value) {
+	if (value){
 		espconn_ssl_disconnect(pnode);
 		return ESPCONN_OK;
-	} else {
-		return ESPCONN_ARG;
 	}
+	else
+		return ESPCONN_ARG;
 }
 
 /******************************************************************************
@@ -68,28 +68,28 @@ espconn_secure_disconnect(struct espconn *espconn) {
  * Returns      : none
 *******************************************************************************/
 sint8 ICACHE_FLASH_ATTR
-espconn_secure_sent(struct espconn *espconn, uint8 *psent, uint16 length) {
+espconn_secure_sent(struct espconn *espconn, uint8 *psent, uint16 length)
+{
 	espconn_msg *pnode = NULL;
 	bool value = false;
-	if (espconn == NULL) {
+	if (espconn == NULL)
 		return ESPCONN_ARG;
-	}
 
 	espconn ->state = ESPCONN_WRITE;
 	value = espconn_find_connection(espconn, &pnode);
-	if (value) {
+	if (value){
 		espconn_ssl_sent(pnode, psent, length);
 		return ESPCONN_OK;
-	} else {
-		return ESPCONN_ARG;
 	}
+	else
+		return ESPCONN_ARG;
 }
 
 sint8 ICACHE_FLASH_ATTR
-espconn_secure_accept(struct espconn *espconn) {
-	if (espconn == NULL) {
+espconn_secure_accept(struct espconn *espconn)
+{
+	if (espconn == NULL)
 		return ESPCONN_ARG;
-	}
 
 	return espconn_ssl_server(espconn);
 }
